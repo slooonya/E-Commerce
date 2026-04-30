@@ -60,6 +60,9 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
     let currency = document.createElement("li"),
         currency__option__logo = document.createElement("img"),
         currency__option__name = document.createElement("span");
+
+    currency.tabIndex = 0;
+    currency.setAttribute("role", "option");
     
     currency__option__logo.src = ele.logo__src;
     currency__option__logo.alt = ele.name;
@@ -76,42 +79,69 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   });
 
   currency__container.addEventListener("click", () => {
-    if(!currency__options.classList.contains("listed")) {
+    if (!currency__options.classList.contains("listed")) {
         currency__options.classList.add("listed");
+        currency__container.setAttribute("aria-expanded", "true");
         currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
-    } else{
+    } else {
         currency__options.classList.remove("listed");
+        currency__container.setAttribute("aria-expanded", "false");
         currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
     }
   });
 
+  currency__container.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      currency__container.click();
+    }
+  });
+
   let currencies__items = document.querySelectorAll(".currency__options li");
+
+  function selectCurrency(item) {
+    currency__options.classList.remove("listed");
+    currency__container.setAttribute("aria-expanded", "false");
+    currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+
+    currency__logo.src = item.children[0].getAttribute("src");
+    currency__logo.alt = item.children[1].textContent;
+
+    currency__name.textContent = item.children[1].textContent;
+    currency__name.setAttribute("the-currency", item.children[1].textContent);
+    currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
+
+    let currency__obj__in__localStorage = {
+      name: currency__name.getAttribute("the-currency"),
+      rate: currency__name.getAttribute("the-rate")
+    };
+    
+    localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
+
+    // change product currency
+    let product__prices = document.querySelectorAll(".product__price");
+    let current__currency = JSON.parse(localStorage.getItem("currency"));
+
+    product__prices.forEach(ele => {
+      let price = +ele.getAttribute("price-USD");
+      ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
+    });
+
+    currency__container.focus();
+  }
+
   currencies__items.forEach(ele => {
     ele.addEventListener("click", (e) => {
-        currency__options.classList.add("listed");
-        currency__logo.src = e.currentTarget.children[0].getAttribute("src");
-        currency__logo.alt = e.currentTarget.children[1].textContent;
+        e.stopPropagation();
+        selectCurrency(ele);
+    });
 
-        currency__name.textContent = e.currentTarget.children[1].textContent;
-        currency__name.setAttribute("the-currency", e.currentTarget.children[1].textContent);
-        currency__name.setAttribute("the-rate", e.currentTarget.children[1].getAttribute("the-rate"));
-
-        let currency__obj__in__localStorage = {
-            name: currency__name.getAttribute("the-currency"),
-            rate: currency__name.getAttribute("the-rate")
-        };
-        
-        localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
-
-        // change product currency
-        let product__prices = document.querySelectorAll(".product__price");
-        let current__currency = JSON.parse(localStorage.getItem("currency"));
-
-        product__prices.forEach(ele => {
-            let price = +ele.getAttribute("price-USD");
-            ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
-        });
-    
+    ele.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        selectCurrency(ele);
+      }
     });
   });
 
