@@ -290,8 +290,11 @@ function render_products(ele) {
         }
     }
 
-    let div = document.createElement("div");
+    let div = document.createElement("button");
+    div.type = "button";
     div.className = "product position-relative mx-3 mb-4 ";
+
+    div.setAttribute("aria-label", `${ele.title}, ${product_price()}`);
     div.setAttribute("product-id", ele.id);
     div.innerHTML = `
         <div class="product__img__container">
@@ -343,4 +346,3 @@ function set_product_rating() {
     });
 
 }
-

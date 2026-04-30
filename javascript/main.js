@@ -380,19 +380,24 @@ function render_preview(element) {
         product__obj = [...all_products][product__id];
 
     product__preview.innerHTML = `
-    <i class="product__details__close fa-solid fa-xmark p-2"></i>
+    <button class="product__details__close p2" type="button" aria-label="Close product preview">
+      <i class="fa-solid fa-xmark p-2"></i>
+    </button>
 
     <div class="product__images">
         <div class="main__image__container p-3"></div>
 
         <div class="product__images__pagination mt-3">
             <div class="images__pagination__container px-2"></div>
-            <div class="images__pagination__control next d-flex justify-content-center align-items-center">
-                <i class="fa-solid fa-angle-right"></i>
-            </div>
-            <div class="images__pagination__control previous d-flex justify-content-center align-items-center">
+              <button class="images__pagination__control previous d-flex justify-content-center align-items-center" 
+                      type="button" aria-label="Previous image">
                 <i class="fa-solid fa-angle-left"></i>
-            </div>
+              </button>
+
+            <button class="images__pagination__control next d-flex justify-content-center align-items-center" 
+                    type="button" aria-label="Next image">
+              <i class="fa-solid fa-angle-right"></i>
+            </button>
         </div>
     </div>
 
@@ -462,8 +467,33 @@ function render_preview(element) {
 
       // close preview container
       let product__details__close = document.querySelector(".product__details__close");
-      product__details__close.onclick = function() {document.body.classList.remove("overlay");}
+      product__details__close.onclick = closePreview;
       product__preview.classList.remove("loading");
+
+      product__preview.setAttribute("tabindex", "-1");
+
+      setTimeout(() => {
+        const closeBtn =
+          product__preview.querySelector(".product__details__close");
+
+        closeBtn?.focus();
+        trapFocus(product__preview);
+      }, 0);
+
+      document.addEventListener("keydown", handlePreviewKeys);
+
+      function closePreview() {
+        document.body.classList.remove("overlay");
+        document.removeEventListener("keydown", handlePreviewKeys);
+        product__preview._removeTrap?.();
+        element?.focus();
+      }
+
+      function handlePreviewKeys(e) {
+        if (e.key === "Escape") {
+          closePreview();
+        }
+      }
 
       // images slider
       const images__pagination__container__images = document.querySelectorAll(".images__pagination__container img");
@@ -554,12 +584,18 @@ function render_preview(element) {
     function set_images_pagination() {
         if(Array.isArray(product__obj.images)) {
             product__obj.images.forEach((el, i) => {
-              let pagination__img = document.createElement("img");
-              pagination__img.className = "p-2 pagination__image";
-              pagination__img.setAttribute("image-id", i);
-              pagination__img.src = el;
-              pagination__img.alt = "image_pagination";
-              images__pagination__container.append(pagination__img);
+              let btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "pagination__image";
+              btn.setAttribute("image-id", i);
+              btn.setAttribute("aria-label", `Select image ${i + 1}`);
+
+              let img = document.createElement("img");
+              img.src = el;
+              img.alt = "";
+
+              btn.append(img);
+              images__pagination__container.append(btn);
             });
         } else{
           let pagination__img = document.createElement("img");
@@ -585,18 +621,47 @@ function render_preview(element) {
       let pagination__images = document.querySelectorAll(".pagination__image");
       pagination__images[0].classList.add("active__image");
 
-      pagination__images.forEach(ele => {
-        ele.onclick = function(e) {
-          pagination__images.forEach(ele => {ele.classList.remove("active__image")});
-          e.currentTarget.classList.add("active__image");
+      pagination__images.forEach(btn => {
+        btn.onclick = function() {
+          pagination__images.forEach(el => {el.classList.remove("active__image")});
+          btn.classList.add("active__image");
+
           // change the main image
-          let main__image = document.querySelector(".main__image");
-          main__image.src = e.currentTarget.src;
+          main__image.src = btn.querySelector("img").src;
         }
       });
     }
 
   });
+
+  // keep focus inside the preview container
+  function trapFocus(container) {
+    const selectors =
+      'button, [href], input, [tabindex]:not([tabindex="-1"])';
+
+    const focusables = container.querySelectorAll(selectors);
+
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    container.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab") return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  }
 }
 
 function display_loading_spinner(container) {
@@ -798,8 +863,5 @@ function display_cart_preview() {
         render_preview(e.currentTarget);
       }
     });
-
-
   });
-
 }
