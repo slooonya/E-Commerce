@@ -16,22 +16,6 @@
     opacity: 1;
   }
 }
-@keyframes banner_next {
-  from {
-    transform: translateX(25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes banner_previous {
-  from {
-    transform: translateX(-25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
 @keyframes category_card {
   from {
     transform: scale(0);
@@ -754,30 +738,6 @@ footer p {
     opacity: 1;
   }
 }
-@keyframes banner_next {
-  from {
-    transform: translateX(25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes banner_previous {
-  from {
-    transform: translateX(-25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes category_card {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
-}
 @keyframes scroll_top {
   from {
     opacity: 0;
@@ -1270,30 +1230,6 @@ header .header__icons .cart__items__num {
     opacity: 1;
   }
 }
-@keyframes banner_next {
-  from {
-    transform: translateX(25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes banner_previous {
-  from {
-    transform: translateX(-25%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes category_card {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
-}
 @keyframes scroll_top {
   from {
     opacity: 0;
@@ -1678,18 +1614,6 @@ main {
   }
 }
 @media (max-width: 576px) {
-  .overlay {
-    overflow: auto;
-  }
-  .overlay .nav__section,
-  .overlay .header__section,
-  .overlay .banner__images,
-  .overlay .categories__section,
-  .overlay .products__section,
-  .overlay .menubar__section,
-  .overlay footer {
-    display: none !important;
-  }
   .overlay .product__preview {
     display: flex !important;
     justify-content: space-around;
@@ -2017,6 +1941,7 @@ footer p {
   align-items: center;
 }
 .banner__images .bullet {
+  border: none;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -2032,6 +1957,7 @@ footer p {
 .banner__images .banner__control {
   width: 40px;
   height: 40px;
+  border: none;
   border-radius: 50%;
   background-color: #83a900;
   color: #FFF;
@@ -2050,19 +1976,12 @@ footer p {
 }
 .banner__images .banner__next {
   right: 3%;
+  display: flex;
 }
 .banner__images .banner__previous {
   left: 3%;
-}
-.banner__images:hover .banner__next {
   display: flex;
-  animation: banner_next 0.5s linear forwards;
 }
-.banner__images:hover .banner__previous {
-  display: flex;
-  animation: banner_previous 0.5s linear forwards;
-}
-
 .categories__section {
   background-color: #f7f7f7;
 }
@@ -2116,13 +2035,18 @@ footer p {
   width: 1px;
   background-color: #e4e2e0;
 }
+.categories__control button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 .categories__section .categories__cards__container {
   display: grid;
   grid-template-columns: repeat(10, 20%);
   transition: all 1s linear;
   overflow: hidden;
 }
-.categories__section .categories__cards__container > div {
+.categories__section .categories__cards__container > button {
   position: relative;
   height: 250px;
   background-color: #FFF;
@@ -2134,13 +2058,14 @@ footer p {
   transition: all 0.3s linear;
   margin-left: 15px;
   margin-right: 15px;
+  border: none;
 }
-.categories__section .categories__cards__container > div > img {
+.categories__section .categories__cards__container > button > img {
   width: 100%;
   mix-blend-mode: multiply;
   transform: scale(0.6);
 }
-.categories__section .categories__cards__container > div .category__card__hover {
+.categories__section .categories__cards__container > button .category__card__hover {
   position: absolute;
   inset: 0;
   background-color: rgba(131, 169, 0, 0.7);
@@ -2151,7 +2076,7 @@ footer p {
   border-radius: 15px;
   visibility: hidden;
 }
-.categories__section .categories__cards__container > div:hover .category__card__hover {
+.categories__section .categories__cards__container > button:hover .category__card__hover {
   visibility: visible;
   animation: category_card 0.4s linear forwards;
 }
