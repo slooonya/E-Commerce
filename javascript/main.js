@@ -56,6 +56,15 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   let currency__options = document.createElement("ul");
   currency__options.classList.add("currency__options", "list-unstyled", "p-1");
 
+  // when tabbed through all the options -> close the dropdown to prevent it from covering content
+  currency__options.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!currency__options.contains(document.activeElement)) {
+        currency__options.classList.remove("listed");
+      }
+    }, 0);
+  });
+
   currencies__data.forEach((ele) => {
     let currency = document.createElement("li"),
         currency__option__logo = document.createElement("img"),
@@ -216,6 +225,15 @@ fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
 
   let categories__options = document.createElement("ul");
+
+  // when tabbed through all the options -> close the dropdown to prevent it from covering content
+  categories__options.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!categories__options.contains(document.activeElement)) {
+        categories__options.classList.remove("listed");
+      }
+    }, 0);
+  });
 
   categories__options.className = "categories__options p-2 list-unstyled";
   document.querySelector(".categories__container").append(categories__options);
@@ -603,8 +621,19 @@ function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
       currency = JSON.parse(localStorage.getItem("currency"));
+
+  // close preview when focus leaves it to prevent it from blocking content
+  cart__items__preview.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!cart__items__preview.contains(document.activeElement)) {
+        cart__items__preview.classList.remove("listed__cart");
+      }
+    }, 0);
+  });
+
   // display list
   cart__items__preview.classList.toggle("listed__cart");  
+
   // loading 
   cart__items__preview.classList.add("loading");
   cart__items__preview.innerHTML = `
@@ -641,21 +670,34 @@ function display_cart_preview() {
       product__item.setAttribute("product-id", ele);
 
       product__item.innerHTML = `
-        <i class="fa-solid fa-xmark"></i>
+        <button class="delete__btn position-absolute" type="button" aria-label="Delete item from cart">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
         <div class="cart__item__img__container p-2">
           <img src=${img_src(item)} alt="product-image" product-id=${ele}>
         </div>
+
         <div class="cart__item__info">
           <h2>${item.title}</h2>
 
           <div class="cart__item__sale d-flex justify-content-between align-items-center mt-4">
+
             <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${currency.name}</div>
 
             <div class="product__count d-flex justify-content-between" max-quantity="10">
-              <div class="increase__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-up"></i></div>
+
+              <button class="increase__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" aria-label="Increase quantity">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+
               <span product-price=${(currency.rate * item.price).toFixed(2)} product-id=${item.id}>1</span>
-              <div class="decrease__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-down"></i></div>
-            </div>
+
+              <button class="decrease__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" aria-label="Decrease quantity">
+              <i class="fa-solid fa-chevron-down"></i></div>
+            </button>
           </div>
         </div>
       </div>`
@@ -666,18 +708,21 @@ function display_cart_preview() {
 
 // functions  
   // delete item
-    let del__btn = document.querySelectorAll(".cart__item .fa-xmark");
+    let del__btn = document.querySelectorAll(".cart__item .delete__btn");
       cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
 
     del__btn.forEach(ele => {
       ele.onclick = function() {
         let product__id = +ele.parentElement.getAttribute("product-id");
+
         // remove from local storage
         ele.parentElement.remove();
         cart__items.delete(product__id);
         localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
+
         // update num of cart items
         cart_items_num();
+
         // no items 
         let product__items = document.querySelectorAll(".cart__item");
         if(product__items.length === 0) {
@@ -685,8 +730,14 @@ function display_cart_preview() {
           cart__items = new Set();
           localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
         } 
+
         // total price
         total_price()
+
+        // prevent focus loss when deleting an item to stop the preview from closing
+        const nextFocusable = cart__items__preview.querySelector("button");
+
+        nextFocusable.focus();
     }
     });
 

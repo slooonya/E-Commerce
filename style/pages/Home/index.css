@@ -163,6 +163,10 @@ main {
   cursor: pointer;
 }
 
+.scroll__top__btn:focus-visible {
+  outline: 2px solid black;
+}
+
 .products__loader {
   display: none;
 }
@@ -308,7 +312,6 @@ main {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
   cursor: pointer;
 }
 .overlay .product__preview .product__details .add__to__cart i {
@@ -471,15 +474,6 @@ main {
   background-color: #e4e2e0;
   margin-bottom: 1px;
 }
-.cart__items__preview .cart__items i.fa-xmark {
-  position: absolute;
-  top: 0;
-  right: 3px;
-  font-size: 14px;
-  cursor: pointer;
-  color: #000;
-  margin-left: 15px;
-}
 .cart__items__preview .cart__items .cart__item {
   display: flex;
   justify-content: space-between;
@@ -536,6 +530,15 @@ main {
   font-weight: 400;
   color: #676666;
 }
+.cart__items__preview .decrease__btn,
+.cart__items__preview .increase__btn {
+  border: none;
+  background-color: #83a900;
+}
+.cart__items__preview .decrease__btn i,
+.cart__items__preview .increase__btn i {
+  color: #FFF;
+}
 .cart__items__preview .cart__summary {
   display: flex;
   flex-direction: column;
@@ -562,7 +565,6 @@ main {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
   font-weight: 500;
 }
 .cart__items__preview .cart__summary .view__cart__btn i {
@@ -867,12 +869,15 @@ header .search__container {
   border-radius: 20px;
 }
 header .search__container input, header .search__container .search__btn {
-  outline: none;
   border: none;
 }
 header .search__container input {
   width: 82%;
   border-radius: 20px;
+}
+header .search__container:focus-visible,
+header .search__container .search__btn:focus-visible {
+  border: 2px solid black;
 }
 header .search__container .search__btn {
   width: 18%;
@@ -882,7 +887,6 @@ header .search__container .search__btn {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
 }
 header .search__container .search__btn i {
   font-size: 13px;
@@ -911,6 +915,11 @@ header .header__icons {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+header .header__icons .profile__btn {
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 header .header__icons i, header .header__icons a {
   cursor: pointer;
@@ -971,7 +980,6 @@ header .header__icons .cart__items__num {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
   font-size: 18px;
   font-weight: 500;
   padding-top: 13px;
@@ -1083,7 +1091,6 @@ header .header__icons .cart__items__num {
     color: #FFF;
     transition: 0.1s all linear;
     border: none;
-    outline: none;
     font-size: 14px;
   }
   header .search__container .search__btn i {
@@ -1133,7 +1140,6 @@ header .header__icons .cart__items__num {
     color: #FFF;
     transition: 0.1s all linear;
     border: none;
-    outline: none;
     font-size: 16px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -1217,7 +1223,6 @@ header .header__icons .cart__items__num {
     color: #FFF;
     transition: 0.1s all linear;
     border: none;
-    outline: none;
     font-size: 18px;
   }
   .menubar__section .categories__btn i {
@@ -1557,7 +1562,6 @@ main {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
   cursor: pointer;
 }
 .overlay .product__preview .product__details .add__to__cart i {
@@ -1720,14 +1724,21 @@ main {
   background-color: #e4e2e0;
   margin-bottom: 1px;
 }
-.cart__items__preview .cart__items i.fa-xmark {
+.cart__items__preview .delete__btn {
+  border: none;
+  background: none;
   position: absolute;
   top: 0;
   right: 3px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.cart__items__preview .delete__btn i {
   font-size: 14px;
-  cursor: pointer;
   color: #000;
-  margin-left: 15px;
 }
 .cart__items__preview .cart__items .cart__item {
   display: flex;
@@ -1811,7 +1822,6 @@ main {
   color: #FFF;
   transition: 0.1s all linear;
   border: none;
-  outline: none;
   font-weight: 500;
 }
 .cart__items__preview .cart__summary .view__cart__btn i {
