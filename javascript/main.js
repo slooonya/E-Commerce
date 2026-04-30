@@ -569,14 +569,6 @@ function cart_items_num() {
   }
 }
 
-function img_src(element) {
-  if(Array.isArray(element.images)) {
-      return element.images[0]
-  } else{
-      return element.images;
-  }
-}
-
 function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
@@ -730,5 +722,3 @@ function display_cart_preview() {
   });
 
 }
-
-
