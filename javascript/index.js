@@ -195,6 +195,7 @@ categories__logos.forEach((ele, i) => {
     category__card__hover.className = "category__card__hover d-flex justify-content-center align-items-center";
     category__card__hover.textContent = ele.name;
     category__card__img.src = ele.src;
+    category__card__img.alt = ele.name + " category";
 
     categories__cards__container.append(category__card);
     category__card.append(category__card__img);
