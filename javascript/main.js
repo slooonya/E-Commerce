@@ -201,6 +201,7 @@ fetch_data("all_products.json").then(res => {
     categories__logos.forEach(el => {
         if(el.name == ele) {
           category__logo.src = el.src;
+          category__logo.alt = el.name + " category";
         }
     });
 
