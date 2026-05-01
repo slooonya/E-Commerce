@@ -6,4 +6,6 @@ function img_src(element) {
   }
 }
 
-module.exports = { img_src };
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { img_src };
+}
