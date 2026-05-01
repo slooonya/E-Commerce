@@ -1,3 +1,10 @@
+// In-memory cache for fetch_data to avoid redundant network requests.
+// Declared at the top of the file so it is initialized before any
+// top-level call to fetch_data() (e.g. the currency API on line ~42).
+// Storing the Promise (not just the resolved value) so concurrent callers
+// during a still-pending fetch all share the same in-flight request.
+const _fetch_cache = new Map();
+
 // loading page
 window.addEventListener("load", () => {
 document.querySelector("main").style.display = "block";
@@ -291,8 +298,12 @@ cart__ico.onclick = function() {
 // ==== Global function ====
 
 function fetch_data(url) {
-const req = fetch(url).then(res => res.json());
-return req;
+  if (_fetch_cache.has(url)) {
+    return _fetch_cache.get(url);
+  }
+  const req = fetch(url).then(res => res.json());
+  _fetch_cache.set(url, req);
+  return req;
 }
 
 function set_products_obj(element, index) {
