@@ -1,5 +1,8 @@
 # E-commerce Website
 
+[![codecov](https://codecov.io/gh/slooonya/E-Commerce/branch/main/graph/badge.svg)](https://codecov.io/gh/slooonya/E-Commerce)
+[![CI](https://github.com/slooonya/E-Commerce/actions/workflows/ci.yaml/badge.svg)](https://github.com/slooonya/E-Commerce/actions/workflows/ci.yaml)
+
 This project is an E-commerce website built using Vanilla JavaScript, Bootstrap, and SASS. It provides a platform for users to browse products, add them to their cart, and proceed to checkout.
 
 ## Features
@@ -66,6 +69,21 @@ If you want to customize the website, you can modify the following files:
 - `index.html`: Update the HTML structure and content.
 - `js/main.js`: Modify the JavaScript code to add new functionalities or change existing ones.
 - `sass/*.scss`: Update the SASS files to customize the styling.
+
+## Tests
+
+Unit tests live in `__tests__/` and run with Jest. The pure helpers under
+`javascript/utils/` are unit-tested and the project enforces an 80% coverage
+threshold (statements, branches, functions, lines):
+
+```bash
+npm install
+npm test                # run the suite
+npm run test:coverage   # run with coverage report
+```
+
+Coverage is also uploaded to Codecov on every push and pull request - see the
+badge above for the live number.
 
 ## Contributing
 
