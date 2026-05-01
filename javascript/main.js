@@ -63,10 +63,22 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   let currency__options = document.createElement("ul");
   currency__options.classList.add("currency__options", "list-unstyled", "p-1");
 
+  // when tabbed through all the options -> close the dropdown to prevent it from covering content
+  currency__options.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!currency__options.contains(document.activeElement)) {
+        currency__options.classList.remove("listed");
+      }
+    }, 0);
+  });
+
   currencies__data.forEach((ele) => {
     let currency = document.createElement("li"),
         currency__option__logo = document.createElement("img"),
         currency__option__name = document.createElement("span");
+
+    currency.tabIndex = 0;
+    currency.setAttribute("role", "option");
     
     currency__option__logo.src = ele.logo__src;
     currency__option__logo.alt = ele.name;
@@ -83,42 +95,69 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   });
 
   currency__container.addEventListener("click", () => {
-    if(!currency__options.classList.contains("listed")) {
+    if (!currency__options.classList.contains("listed")) {
         currency__options.classList.add("listed");
+        currency__container.setAttribute("aria-expanded", "true");
         currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
-    } else{
+    } else {
         currency__options.classList.remove("listed");
+        currency__container.setAttribute("aria-expanded", "false");
         currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
     }
   });
 
+  currency__container.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      currency__container.click();
+    }
+  });
+
   let currencies__items = document.querySelectorAll(".currency__options li");
+
+  function selectCurrency(item) {
+    currency__options.classList.remove("listed");
+    currency__container.setAttribute("aria-expanded", "false");
+    currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+
+    currency__logo.src = item.children[0].getAttribute("src");
+    currency__logo.alt = item.children[1].textContent;
+
+    currency__name.textContent = item.children[1].textContent;
+    currency__name.setAttribute("the-currency", item.children[1].textContent);
+    currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
+
+    let currency__obj__in__localStorage = {
+      name: currency__name.getAttribute("the-currency"),
+      rate: currency__name.getAttribute("the-rate")
+    };
+    
+    localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
+
+    // change product currency
+    let product__prices = document.querySelectorAll(".product__price");
+    let current__currency = JSON.parse(localStorage.getItem("currency"));
+
+    product__prices.forEach(ele => {
+      let price = +ele.getAttribute("price-USD");
+      ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
+    });
+
+    currency__container.focus();
+  }
+
   currencies__items.forEach(ele => {
     ele.addEventListener("click", (e) => {
-        currency__options.classList.add("listed");
-        currency__logo.src = e.currentTarget.children[0].getAttribute("src");
-        currency__logo.alt = e.currentTarget.children[1].textContent;
+        e.stopPropagation();
+        selectCurrency(ele);
+    });
 
-        currency__name.textContent = e.currentTarget.children[1].textContent;
-        currency__name.setAttribute("the-currency", e.currentTarget.children[1].textContent);
-        currency__name.setAttribute("the-rate", e.currentTarget.children[1].getAttribute("the-rate"));
-
-        let currency__obj__in__localStorage = {
-            name: currency__name.getAttribute("the-currency"),
-            rate: currency__name.getAttribute("the-rate")
-        };
-        
-        localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
-
-        // change product currency
-        let product__prices = document.querySelectorAll(".product__price");
-        let current__currency = JSON.parse(localStorage.getItem("currency"));
-
-        product__prices.forEach(ele => {
-            let price = +ele.getAttribute("price-USD");
-            ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
-        });
-    
+    ele.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        selectCurrency(ele);
+      }
     });
   });
 
@@ -193,6 +232,15 @@ fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
 
   let categories__options = document.createElement("ul");
+
+  // when tabbed through all the options -> close the dropdown to prevent it from covering content
+  categories__options.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!categories__options.contains(document.activeElement)) {
+        categories__options.classList.remove("listed");
+      }
+    }, 0);
+  });
 
   categories__options.className = "categories__options p-2 list-unstyled";
   document.querySelector(".categories__container").append(categories__options);
@@ -344,19 +392,24 @@ function render_preview(element) {
         product__obj = [...all_products][product__id];
 
     product__preview.innerHTML = `
-    <i class="product__details__close fa-solid fa-xmark p-2"></i>
+    <button class="product__details__close p2" type="button" aria-label="Close product preview">
+      <i class="fa-solid fa-xmark p-2"></i>
+    </button>
 
     <div class="product__images">
         <div class="main__image__container p-3"></div>
 
         <div class="product__images__pagination mt-3">
             <div class="images__pagination__container px-2"></div>
-            <div class="images__pagination__control next d-flex justify-content-center align-items-center">
-                <i class="fa-solid fa-angle-right"></i>
-            </div>
-            <div class="images__pagination__control previous d-flex justify-content-center align-items-center">
+              <button class="images__pagination__control previous d-flex justify-content-center align-items-center" 
+                      type="button" aria-label="Previous image">
                 <i class="fa-solid fa-angle-left"></i>
-            </div>
+              </button>
+
+            <button class="images__pagination__control next d-flex justify-content-center align-items-center" 
+                    type="button" aria-label="Next image">
+              <i class="fa-solid fa-angle-right"></i>
+            </button>
         </div>
     </div>
 
@@ -426,8 +479,33 @@ function render_preview(element) {
 
       // close preview container
       let product__details__close = document.querySelector(".product__details__close");
-      product__details__close.onclick = function() {document.body.classList.remove("overlay");}
+      product__details__close.onclick = closePreview;
       product__preview.classList.remove("loading");
+
+      product__preview.setAttribute("tabindex", "-1");
+
+      setTimeout(() => {
+        const closeBtn =
+          product__preview.querySelector(".product__details__close");
+
+        closeBtn?.focus();
+        trapFocus(product__preview);
+      }, 0);
+
+      document.addEventListener("keydown", handlePreviewKeys);
+
+      function closePreview() {
+        document.body.classList.remove("overlay");
+        document.removeEventListener("keydown", handlePreviewKeys);
+        product__preview._removeTrap?.();
+        element?.focus();
+      }
+
+      function handlePreviewKeys(e) {
+        if (e.key === "Escape") {
+          closePreview();
+        }
+      }
 
       // images slider
       const images__pagination__container__images = document.querySelectorAll(".images__pagination__container img");
@@ -518,12 +596,18 @@ function render_preview(element) {
     function set_images_pagination() {
         if(Array.isArray(product__obj.images)) {
             product__obj.images.forEach((el, i) => {
-              let pagination__img = document.createElement("img");
-              pagination__img.className = "p-2 pagination__image";
-              pagination__img.setAttribute("image-id", i);
-              pagination__img.src = el;
-              pagination__img.alt = "image_pagination";
-              images__pagination__container.append(pagination__img);
+              let btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "pagination__image";
+              btn.setAttribute("image-id", i);
+              btn.setAttribute("aria-label", `Select image ${i + 1}`);
+
+              let img = document.createElement("img");
+              img.src = el;
+              img.alt = "";
+
+              btn.append(img);
+              images__pagination__container.append(btn);
             });
         } else{
           let pagination__img = document.createElement("img");
@@ -549,18 +633,47 @@ function render_preview(element) {
       let pagination__images = document.querySelectorAll(".pagination__image");
       pagination__images[0].classList.add("active__image");
 
-      pagination__images.forEach(ele => {
-        ele.onclick = function(e) {
-          pagination__images.forEach(ele => {ele.classList.remove("active__image")});
-          e.currentTarget.classList.add("active__image");
+      pagination__images.forEach(btn => {
+        btn.onclick = function() {
+          pagination__images.forEach(el => {el.classList.remove("active__image")});
+          btn.classList.add("active__image");
+
           // change the main image
-          let main__image = document.querySelector(".main__image");
-          main__image.src = e.currentTarget.src;
+          main__image.src = btn.querySelector("img").src;
         }
       });
     }
 
   });
+
+  // keep focus inside the preview container
+  function trapFocus(container) {
+    const selectors =
+      'button, [href], input, [tabindex]:not([tabindex="-1"])';
+
+    const focusables = container.querySelectorAll(selectors);
+
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    container.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab") return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  }
 }
 
 function display_loading_spinner(container) {
@@ -585,8 +698,19 @@ function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
       currency = JSON.parse(localStorage.getItem("currency"));
+
+  // close preview when focus leaves it to prevent it from blocking content
+  cart__items__preview.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!cart__items__preview.contains(document.activeElement)) {
+        cart__items__preview.classList.remove("listed__cart");
+      }
+    }, 0);
+  });
+
   // display list
   cart__items__preview.classList.toggle("listed__cart");  
+
   // loading 
   cart__items__preview.classList.add("loading");
   cart__items__preview.innerHTML = `
@@ -623,21 +747,34 @@ function display_cart_preview() {
       product__item.setAttribute("product-id", ele);
 
       product__item.innerHTML = `
-        <i class="fa-solid fa-xmark"></i>
+        <button class="delete__btn position-absolute" type="button" aria-label="Delete item from cart">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
         <div class="cart__item__img__container p-2">
           <img src=${img_src(item)} alt="product-image" product-id=${ele}>
         </div>
+
         <div class="cart__item__info">
           <h2>${item.title}</h2>
 
           <div class="cart__item__sale d-flex justify-content-between align-items-center mt-4">
+
             <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${currency.name}</div>
 
             <div class="product__count d-flex justify-content-between" max-quantity="10">
-              <div class="increase__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-up"></i></div>
+
+              <button class="increase__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" aria-label="Increase quantity">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+
               <span product-price=${(currency.rate * item.price).toFixed(2)} product-id=${item.id}>1</span>
-              <div class="decrease__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-down"></i></div>
-            </div>
+
+              <button class="decrease__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" aria-label="Decrease quantity">
+              <i class="fa-solid fa-chevron-down"></i></div>
+            </button>
           </div>
         </div>
       </div>`
@@ -648,18 +785,21 @@ function display_cart_preview() {
 
 // functions  
   // delete item
-    let del__btn = document.querySelectorAll(".cart__item .fa-xmark");
+    let del__btn = document.querySelectorAll(".cart__item .delete__btn");
       cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
 
     del__btn.forEach(ele => {
       ele.onclick = function() {
         let product__id = +ele.parentElement.getAttribute("product-id");
+
         // remove from local storage
         ele.parentElement.remove();
         cart__items.delete(product__id);
         localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
+
         // update num of cart items
         cart_items_num();
+
         // no items 
         let product__items = document.querySelectorAll(".cart__item");
         if(product__items.length === 0) {
@@ -667,8 +807,14 @@ function display_cart_preview() {
           cart__items = new Set();
           localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
         } 
+
         // total price
         total_price()
+
+        // prevent focus loss when deleting an item to stop the preview from closing
+        const nextFocusable = cart__items__preview.querySelector("button");
+
+        nextFocusable.focus();
     }
     });
 
@@ -729,8 +875,5 @@ function display_cart_preview() {
         render_preview(e.currentTarget);
       }
     });
-
-
   });
-
 }
