@@ -12,6 +12,8 @@ window.addEventListener("load", () => {
     updateContent();
 
     language__name.textContent = savedLang === "ru" ? "Русский" : "English";
+
+    document.dispatchEvent(new CustomEvent("languageChanged"));
   });
 
   document.querySelector("main").style.display = "block";
@@ -45,6 +47,11 @@ function selectLanguage(item) {
   i18next.changeLanguage(lang).then(() => {
     updateContent();
     renderCategories();
+    rerenderCart();
+
+    document.dispatchEvent(
+      new CustomEvent("languageChanged")
+    );
   });
 
   closeLanguageDropdown();
@@ -316,7 +323,7 @@ fetch_data("all_products.json").then(res => {
   renderCategories();
 });
 
-function renderCategories() {
+export function renderCategories() {
   const container = document.querySelector(".categories__container");
   let oldDropdownMenuOptions = container.querySelector(".categories__options");
 
@@ -439,7 +446,7 @@ function set_products_obj(element, index) {
   categories.add(element.category);
 }
 
-function change_currency() {
+export function change_currency() {
   let currencies__items = document.querySelectorAll(".currency__options li");
   
   currencies__items.forEach(ele => {
@@ -453,7 +460,6 @@ function change_currency() {
           });
       });
   });
-
 }
 
 function render_preview(element) {
@@ -950,4 +956,12 @@ function display_cart_preview() {
       }
     });
   });
+}
+
+function rerenderCart() {
+  const cart = document.querySelector(".cart__items__preview");
+
+  if (cart.classList.contains("listed__cart")) {
+      display_cart_preview();
+  }
 }

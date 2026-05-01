@@ -1,4 +1,10 @@
-import { categories__logos, fetch_data, all_products, display_product_preview } from "./main.js";
+import { categories__logos, fetch_data, all_products, display_product_preview, renderCategories, change_currency } from "./main.js";
+
+document.addEventListener("languageChanged", () => {
+  renderCategoryCards();
+  renderCategories();
+  rerenderVisibleProducts();
+});
 
 // banner image slider
 const banner__images = document.querySelector(".banner__images");
@@ -190,53 +196,74 @@ const categories__cards__container = document.querySelector('.categories__cards_
 const categories__next = document.querySelector('.categories__next');
 const categories__previous = document.querySelector('.categories__previous');
 
-categories__logos.forEach((ele, i) => {
-    let category__card = document.createElement("button");
-    let category__card__img = document.createElement("img");
-    let category__card__hover = document.createElement("div");
+function renderCategoryCards() {
+    categories__cards__container.innerHTML = "";
 
-    category__card.className = `${ele.name}__category`;
-    category__card.type = "button";
-    category__card.setAttribute("category-id", i);
-    category__card.setAttribute("name", ele.name);
+    categories__logos.forEach((ele, i) => {
+        let category__card = document.createElement("button");
+        category__card.className = `${ele.name}__category`;
+        category__card.type = "button";
+        category__card.setAttribute("category-id", i);
+        category__card.name = ele.name;
 
-    category__card__hover.className = "category__card__hover d-flex justify-content-center align-items-center";
-    category__card__hover.textContent = i18next.t(ele.name);
+        category__card.innerHTML = `
+        <img src="${ele.src}" alt="${i18next.t(ele.name)} ${i18next.t("category")}">
 
-    category__card__img.src = ele.src;
-    category__card__img.alt = ele.name + " category";
+        <div class="category__card__hover d-flex justify-content-center align-items-center">
+            ${i18next.t(ele.name)}
+        </div>
+        `;
 
-    categories__cards__container.append(category__card);
-    category__card.append(category__card__img);
-    category__card.append(category__card__hover);
-});
-
-const category__cards = document.querySelectorAll(".categories__cards__container > button");
-let count = 1;
-
-category__cards.forEach(ele => {
-    ele.addEventListener("click", () => {
-
-        const category = ele.name;
-
-        let category__title = document.querySelector(".products__section h2");
-        category__title.textContent = i18next.t(category);
-
-        display_loading_spinner(products__container);
-        products__container.innerHTML = "";
-        
-        all_products.forEach(product => {
-            if(product.category == category) {
-                products__container.classList.remove("loading");
-                render_products(product);
-            }
+        category__card.addEventListener("click", () => {
+            showCategoryProducts(ele.name);
         });
 
-        set_product_rating();
-        display_product_preview();
-        change_currency();
+        categories__cards__container.append(category__card);
     });
-});
+}
+
+function renderProductList(products) {
+    products__container.innerHTML = "";
+
+    products.forEach(product => {
+        render_products(product);
+    });
+
+    set_product_rating();
+    display_product_preview();
+    change_currency();
+}
+
+function showCategoryProducts(category) {
+    const title = document.querySelector(".products__section h2");
+
+    title.dataset.category = category;
+    title.textContent = i18next.t(category);
+
+    products__container.innerHTML = "";
+
+     const filteredProducts = [...all_products].filter(product =>
+        product.category === category
+    );
+
+    renderProductList(filteredProducts);
+}
+
+function rerenderVisibleProducts() {
+    const title = document.querySelector(".products__section h2");
+    const category = title.dataset.category;
+
+    if (category) {
+        showCategoryProducts(category);
+        return;
+    }
+
+    const visibleProducts = [...displayed__items].map(index =>
+        [...all_products][index]
+    );
+
+    renderProductList(visibleProducts);
+}
 
 categories__next.onclick = function() {
     let categories__card__width = document.querySelector(".categories__cards__container > button").clientWidth + 30;
