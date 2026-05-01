@@ -90,13 +90,15 @@ let search__results = document.createElement("ul");
 search__container__input.oninput = function() {
     search__container.classList.add("focused");
 
-    let search__word = new RegExp(this.value, "i");
+    // Don't build a RegExp from user input - it threw on "(" before
+    // and is also a ReDoS risk. Plain substring match works fine here.
+    let search__word = this.value.toLowerCase();
     
     fetch_data("all_products.json").then(res => {
         let results = new Set();
 
         all_products.forEach(ele => {
-            if(ele.title.search(search__word) !== -1){
+            if(ele.title.toLowerCase().includes(search__word)){
                 results.add(ele.title);
             }
         });
@@ -289,18 +291,18 @@ function render_products(ele) {
     div.setAttribute("product-id", ele.id);
     div.innerHTML = `
         <div class="product__img__container">
-            <img src=${img_src(ele)} alt="${ele.title}">
+            <img src="${escape_html(img_src(ele))}" alt="${escape_html(ele.title)}">
         </div>
 
         <div class="product__info p-2 ">
-            <span class="category__name">${ele.category}</span>
-            <h3>${ele.title}</h3>
+            <span class="category__name">${escape_html(ele.category)}</span>
+            <h3>${escape_html(ele.title)}</h3>
             <span class="product__price" price-USD="${ele.price}">${product_price()}</span>
         </div>
 
         <div class="product__discount px-1">${product_discount()}</div>
 
-        <div class="product__rating" rate=${product_rate()}>
+        <div class="product__rating" rate="${product_rate()}">
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>

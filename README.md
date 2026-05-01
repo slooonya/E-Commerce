@@ -57,6 +57,8 @@ To run the E-commerce website locally, follow these steps:
 2. Navigate to the project directory: `cd e-commerce-website`
 3. Open the `index.html` file in your preferred web browser.
 
+The currency API key lives in `javascript/config.js`. If you want to swap in your own key, grab a free one from [currencyfreaks.com](https://currencyfreaks.com/).
+
 ## Customization
 
 If you want to customize the website, you can modify the following files:
