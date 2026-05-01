@@ -1,14 +1,21 @@
+import i18next, { updateContent } from "./i18n.js";
+
 // In-memory cache for fetch_data to avoid redundant network requests.
-// Declared at the top of the file so it is initialized before any
-// top-level call to fetch_data() (e.g. the currency API on line ~42).
 // Storing the Promise (not just the resolved value) so concurrent callers
 // during a still-pending fetch all share the same in-flight request.
-const _fetch_cache = new Map();
+const fetch_cache = new Map();
 
 // loading page
 window.addEventListener("load", () => {
-document.querySelector("main").style.display = "block";
-document.querySelector(".loader").style.display = "none";
+  const savedLang = localStorage.getItem('lang') || 'en';
+  i18next.changeLanguage(savedLang).then(() => {
+    updateContent();
+
+    language__name.textContent = savedLang === "ru" ? "Русский" : "English";
+  });
+
+  document.querySelector("main").style.display = "block";
+  document.querySelector(".loader").style.display = "none";
 });
 
 // scroll to top
@@ -20,6 +27,76 @@ if(scrollY >= 500) {
   scroll__top__btn.classList.remove("displayed");
 }
 });
+
+// Language switch
+const language__container = document.querySelector(".language__container");
+const language__options = document.querySelector(".language__options");
+const language__name = document.querySelector(".language__name");
+const language__icon = document.querySelector(".language__container i");
+
+function selectLanguage(item) {
+  const lang = item.dataset.lang;
+  localStorage.setItem('lang', lang);
+
+  language__name.textContent = item.textContent;
+  language__options.classList.remove("listed");
+  language__container.setAttribute("aria-expanded", "false");
+
+  i18next.changeLanguage(lang).then(() => {
+    updateContent();
+    renderCategories();
+  });
+
+  closeLanguageDropdown();
+  language__container.focus();
+}
+
+language__container.addEventListener("click", () => {
+    if (!language__options.classList.contains("listed")) {
+        language__options.classList.add("listed");
+        language__container.setAttribute("aria-expanded", "true");
+        language__icon.className = "fa-solid fa-chevron-up mx-1";
+    } else {
+        closeLanguageDropdown();
+    }
+});
+
+language__container.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    language__container.click();
+  }
+});
+
+document.querySelectorAll(".language__item").forEach(item => {
+  item.addEventListener("click", (e) => {
+    e.stopPropagation();
+    selectLanguage(item);
+  });
+
+  item.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      selectLanguage(item);
+    }
+  });
+});
+
+// when tabbed through all the options -> close the dropdown to prevent it from covering content
+language__options.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!language__options.contains(document.activeElement)) {
+      language__options.classList.remove("listed");
+    }
+  }, 0);
+});
+
+function closeLanguageDropdown() {
+  language__options.classList.remove("listed");
+  language__container.setAttribute("aria-expanded", "false");
+  language__icon.className = "fa-solid fa-chevron-down mx-1";
+}
 
 // Currency convert
 const currency__container = document.querySelector(".currency__container");
@@ -94,7 +171,7 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
     document.querySelector(".cart__items__preview").classList.remove("listed__cart");
   });
 
-  currency__container.addEventListener("click", () => {
+  function toggleCurrencyDropdown() {
     if (!currency__options.classList.contains("listed")) {
         currency__options.classList.add("listed");
         currency__container.setAttribute("aria-expanded", "true");
@@ -104,12 +181,18 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
         currency__container.setAttribute("aria-expanded", "false");
         currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
     }
+  }
+
+  currency__container.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleCurrencyDropdown();
   });
 
   currency__container.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      currency__container.click();
+      e.stopPropagation();
+      toggleCurrencyDropdown();
     }
   });
 
@@ -184,54 +267,90 @@ let currency__options__items = document.querySelectorAll(".currency__options li"
 // set categories
 const categories__btn = document.querySelector(".categories__btn");
 const categories = new Set();
-const all_products = new Set();
-const categories__logos = [
-{
-  name: "smartphones",
-  src: "images/samrtphones.jpg"
-},
-{
-  name: "electronics",
-  src: "images/electronics.jpg"
-},
-{
-  name: "laptops",
-  src: "images/laptops.jpg"
-},
-{
-  name: "watches",
-  src: "images/watches.webp"
-},
-{
-  name: "shoes",
-  src: "images/shoes.png"
-},
-{
-  name: "fragrances",
-  src: "images/Fragrances.jpg"
-},
-{
-  name: "skincare",
-  src: "images/skincare.jpg"
-},,
-{
-  name: "men's products",
-  src: "images/Men's products.jpg"
-},    
-{
-  name: "women's products",
-  src: "images/Women's products.jpg"
-},
-{
-  name: "jewelery",
-  src: "images/jewelry.webp"
-}
+export const all_products = new Set();
+export const categories__logos = [
+  {
+    name: "smartphones",
+    src: "images/samrtphones.jpg"
+  },
+  {
+    name: "electronics",
+    src: "images/electronics.jpg"
+  },
+  {
+    name: "laptops",
+    src: "images/laptops.jpg"
+  },
+  {
+    name: "watches",
+    src: "images/watches.webp"
+  },
+  {
+    name: "shoes",
+    src: "images/shoes.png"
+  },
+  {
+    name: "fragrances",
+    src: "images/Fragrances.jpg"
+  },
+  {
+    name: "skincare",
+    src: "images/skincare.jpg"
+  },,
+  {
+    name: "mensProducts",
+    src: "images/Men's products.jpg"
+  },    
+  {
+    name: "womensProducts",
+    src: "images/Women's products.jpg"
+  },
+  {
+    name: "jewelry",
+    src: "images/jewelry.webp"
+  }
 ];
 
 fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
+  renderCategories();
+});
+
+function renderCategories() {
+  const container = document.querySelector(".categories__container");
+  let oldDropdownMenuOptions = container.querySelector(".categories__options");
+
+  if (oldDropdownMenuOptions) oldDropdownMenuOptions.remove();
 
   let categories__options = document.createElement("ul");
+  categories__options.className = "categories__options p-2 list-unstyled";
+
+  container.append(categories__options);
+
+  categories.forEach((ele) => {
+    let category = document.createElement("li");
+    category.className = "category p-2";
+    category.setAttribute("category", ele);
+
+    let category__logo = document.createElement("img");
+    category__logo.classList.add("mx-2");
+
+    categories__logos.forEach(el => {
+      if(el.name == ele) {
+        category__logo.src = el.src;
+        category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
+      }
+    });
+
+    let category__link = document.createElement("a");
+    category__link.classList.add("text-decoration-none");
+    category__link.href = `#categories__section`;
+    category__link.textContent = i18next.t(ele);
+
+    category.prepend(category__logo);
+    category.append(category__link);
+    categories__options.append(category);
+  });
 
   // when tabbed through all the options -> close the dropdown to prevent it from covering content
   categories__options.addEventListener("focusout", () => {
@@ -241,73 +360,27 @@ fetch_data("all_products.json").then(res => {
       }
     }, 0);
   });
+}
 
-  categories__options.className = "categories__options p-2 list-unstyled";
-  document.querySelector(".categories__container").append(categories__options);
+const categories__container = document.querySelector(".categories__container");
 
-  categories.forEach((ele) => {
-    let category = document.createElement("li");
-    let category__logo = document.createElement("img");
+categories__btn.onclick = function() {
+  const dropdownMenu = categories__container.querySelector(".categories__options");
 
-    category.className = "category p-2";
-    category.setAttribute("category", ele);
-    category__logo.classList.add("mx-2")
+  if (!dropdownMenu) return;
+  dropdownMenu.classList.toggle("listed");
+}
 
-    categories__logos.forEach(el => {
-        if(el.name == ele) {
-          category__logo.src = el.src;
-          category__logo.alt = el.name + " category";
-        }
-    });
+let categories__items = document.querySelectorAll(".category");
 
-    category.prepend(category__logo);
-    category.append(category__link(ele));
-
-    categories__options.append(category);
-  });
-
-
-  function set__categories__logos(category, data) {
-    data.forEach(el => {
-        if(el.name == category) {
-            let category__logo = document.createElement("img");
-            category__logo.src = el.src;
-
-            return category__logo;
-        }
-    })
+categories__items.forEach(ele => {
+  ele.onclick = function(e) {
+      categories__options.classList.remove("listed");
   }
-
-
-  function category__link(txt) {
-    let category__link = document.createElement("a");
-    category__link.classList.add("text-decoration-none");
-    category__link.href = `#categories__section`;
-    category__link.text = txt;
-
-    return category__link;
-  }
-
-  categories__btn.onclick = function() {
-    if(!categories__options.classList.contains("listed")) {
-        categories__options.classList.add("listed");
-    } else {
-        categories__options.classList.remove("listed");
-    }
-  }
-
-  let categories__items = document.querySelectorAll(".category");
-
-  categories__items.forEach(ele => {
-    ele.onclick = function(e) {
-        categories__options.classList.remove("listed");
-    }
-  });
-
-}); 
+});
 
 // product preview
-function display_product_preview() {
+export function display_product_preview() {
   let products = document.querySelectorAll(".product");
 
   products.forEach(ele => {
@@ -345,24 +418,25 @@ cart__ico.onclick = function() {
 
 // ==== Global function ====
 
-function fetch_data(url) {
-  if (_fetch_cache.has(url)) {
-    return _fetch_cache.get(url);
+export function fetch_data(url) {
+  if (fetch_cache.has(url)) {
+    return fetch_cache.get(url);
   }
+
   const req = fetch(url).then(res => res.json());
-  _fetch_cache.set(url, req);
+  fetch_cache.set(url, req);
   return req;
 }
 
 function set_products_obj(element, index) {
-all_products.add(element);
-element.id = index;
+  all_products.add(element);
+  element.id = index;
 
-if(["Pants","Jackets","Hoodies","Jackets","Hoodies","T-shirt","Jackets","T-shirt","Jackets", "T-shirts"].includes(element.category)) {
-  element.category = "men's products";
-}
+  if(["Pants","Jackets","Hoodies","Jackets","Hoodies","T-shirt","Jackets","T-shirt","Jackets", "T-shirts"].includes(element.category)) {
+    element.category = "mensProducts";
+  }
 
-categories.add(element.category);
+  categories.add(element.category);
 }
 
 function change_currency() {
@@ -392,7 +466,7 @@ function render_preview(element) {
         product__obj = [...all_products][product__id];
 
     product__preview.innerHTML = `
-    <button class="product__details__close p2" type="button" aria-label="Close product preview">
+    <button class="product__details__close p2" type="button" data-i18n-aria="${i18next.t('closePreviewLabel')}">
       <i class="fa-solid fa-xmark p-2"></i>
     </button>
 
@@ -402,12 +476,12 @@ function render_preview(element) {
         <div class="product__images__pagination mt-3">
             <div class="images__pagination__container px-2"></div>
               <button class="images__pagination__control previous d-flex justify-content-center align-items-center" 
-                      type="button" aria-label="Previous image">
+                      type="button" data-i18n-aria="${i18next.t('previousImageLabel')}">
                 <i class="fa-solid fa-angle-left"></i>
               </button>
 
             <button class="images__pagination__control next d-flex justify-content-center align-items-center" 
-                    type="button" aria-label="Next image">
+                    type="button" data-i18n-aria="${i18next.t('nextImageLabel')}">
               <i class="fa-solid fa-angle-right"></i>
             </button>
         </div>
@@ -428,7 +502,7 @@ function render_preview(element) {
             </div>
 
             <p class="availability mb-4">
-                Availability : <span>${product_stock()}</span>
+                ${i18next.t("availability")} : <span>${product_stock()}</span>
             </p>
 
         </div>
@@ -436,7 +510,7 @@ function render_preview(element) {
         <div class="product__sale mt-5">
         <button class="add__to__cart py-2 px-3" product-id=${product__obj.id}>
             <i class="fa-solid fa-cart-shopping mx-2  text-decoration-none"></i>
-            Add To Cart
+            ${i18next.t("addToCart")}
         </button>
 
       </div>
@@ -449,7 +523,7 @@ function render_preview(element) {
       let main__image = document.createElement("img");
 
       main__image.className = 'main__image';
-      main__image.alt = "product-image";
+      main__image.alt = i18next.t("productImageLabel");
       main__image.src = img_src(product__obj);
       main__image__container.append(main__image);
       // image zoom
@@ -577,19 +651,18 @@ function render_preview(element) {
 
             return old__price.toFixed(2)
 
-        } else if(product__obj.old_price){
+        } else if (product__obj.old_price) {
           return product__obj.old_price
-          
-        } else{
+        } else {
           return "";
         }
     }
     
     function product_stock() {
-        if(product__obj.stock) {
+        if (product__obj.stock) {
             return product__obj.stock;
-        } else{
-            return "Many In Stock"
+        } else {
+            return i18next.t('manyInStock', 'Many In Stock')
         }
     }
 
@@ -600,11 +673,11 @@ function render_preview(element) {
               btn.type = "button";
               btn.className = "pagination__image";
               btn.setAttribute("image-id", i);
-              btn.setAttribute("aria-label", `Select image ${i + 1}`);
+              btn.setAttribute("data-i18n-aria", `${i18next.t('selectImageLabel')} ${i + 1}`);
 
               let img = document.createElement("img");
               img.src = el;
-              img.alt = "";
+              img.alt = i18next.t("productImageLabel");
 
               btn.append(img);
               images__pagination__container.append(btn);
@@ -614,7 +687,7 @@ function render_preview(element) {
           pagination__img.className = "p-2 pagination__image";
           pagination__img.setAttribute("image-id", 0);
           pagination__img.src = product__obj.images;
-          pagination__img.alt = "image_pagination";
+          pagination__img.alt = i18next.t("paginationImageLabel");
           images__pagination__container.append(pagination__img);
         }
     }
@@ -643,7 +716,6 @@ function render_preview(element) {
         }
       });
     }
-
   });
 
   // keep focus inside the preview container
@@ -717,7 +789,9 @@ function display_cart_preview() {
     <div class="cart__loader justify-content-center align-items-center">
         <div class="spinner-border text-primary spinner-border-sm"
         role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">
+          ${i18next.t("loading")}
+        </span>
         </div>
     </div>`;
 
@@ -729,11 +803,11 @@ function display_cart_preview() {
 
     <div class="cart__summary position-relative pt-2">
       <div class="cart__summary__total pb-3">
-        Cart Total : <span class="mx-2"></span>
+        ${i18next.t("cartTotal")} <span class="mx-2"></span>
       </div>
       <button class="view__cart__btn py-2 px-3">
         <i href="#" class="fa-solid fa-cart-shopping mx-2 text-decoration-none"></i>
-        Order Now
+        ${i18next.t("orderNow")}
       </button>
     </div>`;
 
@@ -747,7 +821,7 @@ function display_cart_preview() {
       product__item.setAttribute("product-id", ele);
 
       product__item.innerHTML = `
-        <button class="delete__btn position-absolute" type="button" aria-label="Delete item from cart">
+        <button class="delete__btn position-absolute" type="button" data-i18n-aria="${i18next.t('deleteItemLabel')}">
           <i class="fa-solid fa-xmark"></i>
         </button>
 
@@ -765,14 +839,14 @@ function display_cart_preview() {
             <div class="product__count d-flex justify-content-between" max-quantity="10">
 
               <button class="increase__btn d-flex justify-content-center align-items-center py-1" 
-                      type="button" aria-label="Increase quantity">
+                      type="button" data-i18n-aria="${i18next.t('increaseQuantityLabel')}">
                 <i class="fa-solid fa-chevron-up"></i>
               </button>
 
               <span product-price=${(currency.rate * item.price).toFixed(2)} product-id=${item.id}>1</span>
 
               <button class="decrease__btn d-flex justify-content-center align-items-center py-1" 
-                      type="button" aria-label="Decrease quantity">
+                      type="button" data-i18n-aria="${i18next.t('decreaseQuantityLabel')}">
               <i class="fa-solid fa-chevron-down"></i></div>
             </button>
           </div>

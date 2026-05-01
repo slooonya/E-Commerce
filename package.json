@@ -1,8 +1,10 @@
 {
   "devDependencies": {
+    "i18next-cli": "^1.56.9",
     "jest": "^30.3.0"
   },
   "dependencies": {
+    "i18next": "^26.0.8",
     "jest-environment-jsdom": "^30.3.0"
   }
 }

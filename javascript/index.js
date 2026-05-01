@@ -1,3 +1,5 @@
+import { categories__logos, fetch_data, all_products, display_product_preview } from "./main.js";
+
 // banner image slider
 const banner__images = document.querySelector(".banner__images");
 const banner__bullets = document.querySelector(".banner__bullets");
@@ -8,15 +10,15 @@ const banner__text__h2 = document.querySelector(".banner__text h2");
 let images__data = [
     {
         src: `images/banner-1.webp`,
-        title: "Smart Watches"
+        title: i18next.t("smartWatches")
     },
     {
         src: `images/banner-2.webp`,
-        title: "Phones"
+        title: i18next.t("phones")
     },
     {
         src: `images/banner-3.jpg`,
-        title: "Laptops"
+        title: i18next.t("laptops")
     }
 ];
 
@@ -26,7 +28,7 @@ for(let i = 0; i < images__data.length; i++) {
     bullet.type = "button";
 
     bullet.setAttribute("img-id", i);
-    bullet.setAttribute("aria-label", `Go to slide ${i + 1}`);
+    bullet.setAttribute("aria-label", `Go to slide ${i + 1}`); // !
 
     banner__bullets.append(bullet);
 }
@@ -170,7 +172,7 @@ search__btn.onclick = function() {
                 
             } else{
                 products__container.classList.add("no__results");
-                products__container.innerHTML = "<h3>No Results</h3>";
+                products__container.innerHTML = `<h3>${i18next.t("noResults")}</h3>`;
                 location.href = "#products__section"; 
                 search__container__input.value = "";
                 if(search__results){
@@ -199,7 +201,7 @@ categories__logos.forEach((ele, i) => {
     category__card.setAttribute("name", ele.name);
 
     category__card__hover.className = "category__card__hover d-flex justify-content-center align-items-center";
-    category__card__hover.textContent = ele.name;
+    category__card__hover.textContent = i18next.t(ele.name);
 
     category__card__img.src = ele.src;
     category__card__img.alt = ele.name + " category";
@@ -215,22 +217,24 @@ let count = 1;
 category__cards.forEach(ele => {
     ele.addEventListener("click", () => {
 
+        const category = ele.name;
+
         let category__title = document.querySelector(".products__section h2");
-        category__title.textContent = ele.getAttribute("name");
+        category__title.textContent = i18next.t(category);
 
         display_loading_spinner(products__container);
+        products__container.innerHTML = "";
         
-        fetch_data("all_products.json").then(res => {
-            all_products.forEach(el => {
-                if(el.category == ele.getAttribute("name")) {
-                    products__container.classList.remove("loading");
-                    render_products(el);
-                    set_product_rating();
-                    display_product_preview();
-                    change_currency()
-                }
-            });
+        all_products.forEach(product => {
+            if(product.category == category) {
+                products__container.classList.remove("loading");
+                render_products(product);
+            }
         });
+
+        set_product_rating();
+        display_product_preview();
+        change_currency();
     });
 });
 
@@ -242,11 +246,6 @@ categories__next.onclick = function() {
 categories__previous.onclick = function() {
     let categories__card__width = document.querySelector(".categories__cards__container > button").clientWidth + 30;
     categories__cards__container.scrollLeft -= categories__card__width;
-}
-
-function image_slider_move(element) {
-    let translate__length = (element.clientWidth + 30) * count;
-    return translate__length;
 }
 
 // products
@@ -303,7 +302,7 @@ function render_products(ele) {
         </div>
 
         <div class="product__info p-2 ">
-            <span class="category__name">${ele.category}</span>
+            <span class="category__name">${i18next.t(ele.category)}</span>
             <h3>${ele.title}</h3>
             <span class="product__price" price-USD="${ele.price}">${product_price()}</span>
         </div>
