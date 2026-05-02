@@ -494,6 +494,7 @@ function render_preview(element) {
         }
 
         cart_items_num();
+        show_add_to_cart_feedback(e.currentTarget);
       }
 
 
@@ -585,6 +586,43 @@ function cart_items_num() {
   if(localStorage.getItem("cart-items")) {
     cart__items__num.textContent = JSON.parse(localStorage.getItem("cart-items")).length
   }
+}
+
+function show_add_to_cart_feedback(buttonEl) {
+  const toast = document.createElement("div");
+  toast.className = "cart__feedback__toast";
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.textContent = "Added to cart";
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("cart__feedback__toast--visible");
+  });
+
+  const cartBadge = document.querySelector(".cart__items__num");
+  if (cartBadge) {
+    cartBadge.classList.remove("cart__items__num--bump");
+    void cartBadge.offsetWidth;
+    cartBadge.classList.add("cart__items__num--bump");
+  }
+
+  const originalHTML = buttonEl.innerHTML;
+  buttonEl.disabled = true;
+  buttonEl.classList.add("add__to__cart--added");
+  buttonEl.innerHTML =
+    '<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>Added!';
+
+  window.setTimeout(() => {
+    toast.classList.remove("cart__feedback__toast--visible");
+    window.setTimeout(() => toast.remove(), 320);
+  }, 2400);
+
+  window.setTimeout(() => {
+    buttonEl.disabled = false;
+    buttonEl.classList.remove("add__to__cart--added");
+    buttonEl.innerHTML = originalHTML;
+  }, 1800);
 }
 
 function display_cart_preview() {
