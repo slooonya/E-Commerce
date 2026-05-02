@@ -577,7 +577,6 @@ function render_preview(element) {
       function closePreview() {
         document.body.classList.remove("overlay");
         document.removeEventListener("keydown", handlePreviewKeys);
-        product__preview._removeTrap?.();
         element?.focus();
       }
 
