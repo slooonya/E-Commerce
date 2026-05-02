@@ -21,9 +21,13 @@ let images__data = [
 ];
 
 for(let i = 0; i < images__data.length; i++) {
-    let bullet = document.createElement("div");
+    let bullet = document.createElement("button");
     bullet.className = "bullet";
+    bullet.type = "button";
+
     bullet.setAttribute("img-id", i);
+    bullet.setAttribute("aria-label", `Go to slide ${i + 1}`);
+
     banner__bullets.append(bullet);
 }
 
@@ -187,15 +191,18 @@ const categories__next = document.querySelector('.categories__next');
 const categories__previous = document.querySelector('.categories__previous');
 
 categories__logos.forEach((ele, i) => {
-    let category__card = document.createElement("div");
+    let category__card = document.createElement("button");
     let category__card__img = document.createElement("img");
     let category__card__hover = document.createElement("div");
 
     category__card.className = `${ele.name}__category`;
+    category__card.type = "button";
     category__card.setAttribute("category-id", i);
     category__card.setAttribute("name", ele.name);
+
     category__card__hover.className = "category__card__hover d-flex justify-content-center align-items-center";
     category__card__hover.textContent = ele.name;
+
     category__card__img.src = ele.src;
     category__card__img.alt = ele.name + " category";
 
@@ -204,7 +211,7 @@ categories__logos.forEach((ele, i) => {
     category__card.append(category__card__hover);
 });
 
-const category__cards = document.querySelectorAll(".categories__cards__container > div");
+const category__cards = document.querySelectorAll(".categories__cards__container > button");
 let count = 1;
 
 category__cards.forEach(ele => {
@@ -230,12 +237,12 @@ category__cards.forEach(ele => {
 });
 
 categories__next.onclick = function() {
-    let categories__card__width = document.querySelector(".categories__cards__container > div").clientWidth + 30;
+    let categories__card__width = document.querySelector(".categories__cards__container > button").clientWidth + 30;
     categories__cards__container.scrollLeft += categories__card__width;
 }
 
 categories__previous.onclick = function() {
-    let categories__card__width = document.querySelector(".categories__cards__container > div").clientWidth + 30;
+    let categories__card__width = document.querySelector(".categories__cards__container > button").clientWidth + 30;
     categories__cards__container.scrollLeft -= categories__card__width;
 }
 
@@ -286,8 +293,11 @@ function render_products(ele) {
         }
     }
 
-    let div = document.createElement("div");
+    let div = document.createElement("button");
+    div.type = "button";
     div.className = "product position-relative mx-3 mb-4 ";
+
+    div.setAttribute("aria-label", `${ele.title}, ${product_price()}`);
     div.setAttribute("product-id", ele.id);
     div.innerHTML = `
         <div class="product__img__container">
@@ -339,4 +349,3 @@ function set_product_rating() {
     });
 
 }
-

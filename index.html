@@ -43,7 +43,8 @@
           <div class="nav__links">
             <div class="text-center"><i class="fa-solid fa-truck mx-1"></i> Track Order</div>
             <div class="text-center"><i class="fa-solid fa-envelope mx-1"></i> admin@gmail.com</div>
-            <div class="currency__container text-center d-flex justify-content-center align-items-md-center" style="cursor: pointer">
+            <div class="currency__container text-center d-flex justify-content-center align-items-md-center"
+              tabindex="0" role="button" aria-expanded="false" style="cursor: pointer" >
               <img src="https://flagcdn.com/w40/us.png" class="mx-2 currency__logo" height="16" width="25" alt="USD"> 
               <span class="currency__name" the-rate="1.0" the-currency="USD">USD</span>
               <i class="fa-solid fa-chevron-down mx-1" style="font-size: 12px"></i>
@@ -63,7 +64,10 @@
           </div>
 
           <div class="header__icons">
-            <div><i class="fa-solid fa-user"></i></div>
+            <button class="profile__btn" type="button" aria-label="Profile">
+              <i class="fa-solid fa-user"></i>
+            </button>
+
             <div class="cart">
               <a href="#" class="cart__ico p-2 text-decoration-none" aria-label="Shopping cart"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i></a>
               <span class="cart__items__num">0</span>
@@ -96,16 +100,15 @@
           <h2 class="display-2">Smart Watches</h2>
           <p>Amazing and Exclusive offers</p>
         </div>
-        
-        <div class="banner__bullets">
-        </div>
+          <button class="banner__previous banner__control" type="button" aria-label="Previous slide">
+            <i class="fa-solid fa-chevron-left" style="font-size: 12px"></i>
+        </button>
 
-        <div class="banner__next banner__control">
+        <button class="banner__next banner__control" type="button" aria-label="Next slide">
           <i class="fa-solid fa-chevron-right" style="font-size: 12px"></i>
-        </div>
-        <div class="banner__previous banner__control">
-          <i class="fa-solid fa-chevron-left" style="font-size: 12px"></i>
-        </div>
+        </button>
+        
+        <div class="banner__bullets"></div>
       </section>
     <!--categories-->
       <section id="categories__section" class="categories__section my-5">
@@ -113,8 +116,14 @@
           <div>
             <h2 class="m-0 py-3 position-relative">Categories</h2><hr class="m-0">
             <div class="categories__control">
-              <i class="fa-solid fa-chevron-left categories__previous mx-2 p-2" style="font-size: 12px"></i>
-              <i class="fa-solid fa-chevron-right categories__next mx-2 p-2" style="font-size: 12px"></i> 
+
+              <button class="categories__previous mx-2 p-2" type="button" aria-label="Previous categories">
+                <i class="fa-solid fa-chevron-left categories__previous mx-2 p-2" style="font-size: 12px"></i>
+              </button>
+
+              <button class="categories__next mx-2 p-2" type="button" aria-label="Next categories">
+                <i class="fa-solid fa-chevron-right categories__next mx-2 p-2" style="font-size: 12px"></i> 
+              </button>
             </div>
           </div>
 
