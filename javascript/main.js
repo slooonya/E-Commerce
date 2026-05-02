@@ -1,3 +1,10 @@
+// In-memory cache for fetch_data to avoid redundant network requests.
+// Declared at the top of the file so it is initialized before any
+// top-level call to fetch_data() (e.g. the currency API on line ~42).
+// Storing the Promise (not just the resolved value) so concurrent callers
+// during a still-pending fetch all share the same in-flight request.
+const _fetch_cache = new Map();
+
 // loading page
 window.addEventListener("load", () => {
 document.querySelector("main").style.display = "block";
@@ -39,7 +46,12 @@ let usd = {
 localStorage.setItem("currency", JSON.stringify(usd));
 }
 
-fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=9271916030654b879d5f13f9d079b58c')
+// API key comes from javascript/config.js so it's not buried in the
+// app code. If no key is set, just stay on USD.
+const currency_api_key = (window.APP_CONFIG && window.APP_CONFIG.CURRENCY_API_KEY) || "";
+
+if (currency_api_key) {
+fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
 .then(res => {  
 
   for(let i in res.rates) {
@@ -155,6 +167,7 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   });
 
 });
+}
 
 window.addEventListener("load", () => {
 let currency__options__items = document.querySelectorAll(".currency__options li");
@@ -249,6 +262,7 @@ fetch_data("all_products.json").then(res => {
     categories__logos.forEach(el => {
         if(el.name == ele) {
           category__logo.src = el.src;
+          category__logo.alt = el.name + " category";
         }
     });
 
@@ -338,8 +352,12 @@ cart__ico.onclick = function() {
 // ==== Global function ====
 
 function fetch_data(url) {
-const req = fetch(url).then(res => res.json());
-return req;
+  if (_fetch_cache.has(url)) {
+    return _fetch_cache.get(url);
+  }
+  const req = fetch(url).then(res => res.json());
+  _fetch_cache.set(url, req);
+  return req;
 }
 
 function set_products_obj(element, index) {
@@ -402,7 +420,7 @@ function render_preview(element) {
     </div>
 
     <div class="product__details p-2">
-        <h2 class="py-1">${product__obj.title}</h2><hr class="m-0">
+        <h2 class="py-1">${escape_html(product__obj.title)}</h2><hr class="m-0">
         <div class="product__description mb-4 mt-3">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam sint itaque saepe beatae, facilis dolorem ipsa ut, accusantium temporibus minima nisi ex porro vel deserunt quae autem voluptates eum ipsam Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam sint itaque saepe beatae</div>
 
         <div>
@@ -410,19 +428,19 @@ function render_preview(element) {
                 <span class="the__current__price">
                     <span class="currency__value" product-price="${(product__obj.price * JSON.parse(localStorage.getItem("currency")).rate).toFixed(2)}">
                     ${(product__obj.price * JSON.parse(localStorage.getItem("currency")).rate).toFixed(2)}</span>
-                    <span class="currency__name">${JSON.parse(localStorage.getItem("currency")).name}</span>
+                    <span class="currency__name">${escape_html(JSON.parse(localStorage.getItem("currency")).name)}</span>
                 </span>
                 <del class="the__old__price mx-2"></del>
             </div>
 
             <p class="availability mb-4">
-                Availability : <span>${product_stock()}</span>
+                Availability : <span>${escape_html(product_stock())}</span>
             </p>
 
         </div>
 
         <div class="product__sale mt-5">
-        <button class="add__to__cart py-2 px-3" product-id=${product__obj.id}>
+        <button class="add__to__cart py-2 px-3" product-id="${product__obj.id}">
             <i class="fa-solid fa-cart-shopping mx-2  text-decoration-none"></i>
             Add To Cart
         </button>
@@ -740,29 +758,20 @@ function display_cart_preview() {
         </button>
 
         <div class="cart__item__img__container p-2">
-          <img src=${img_src(item)} alt="product-image" product-id=${ele}>
+          <img src="${escape_html(img_src(item))}" alt="product-image" product-id="${ele}">
         </div>
 
         <div class="cart__item__info">
-          <h2>${item.title}</h2>
+          <h2>${escape_html(item.title)}</h2>
 
           <div class="cart__item__sale d-flex justify-content-between align-items-center mt-4">
-
-            <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${currency.name}</div>
+            <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${escape_html(currency.name)}</div>
 
             <div class="product__count d-flex justify-content-between" max-quantity="10">
-
-              <button class="increase__btn d-flex justify-content-center align-items-center py-1" 
-                      type="button" aria-label="Increase quantity">
-                <i class="fa-solid fa-chevron-up"></i>
-              </button>
-
-              <span product-price=${(currency.rate * item.price).toFixed(2)} product-id=${item.id}>1</span>
-
-              <button class="decrease__btn d-flex justify-content-center align-items-center py-1" 
-                      type="button" aria-label="Decrease quantity">
-              <i class="fa-solid fa-chevron-down"></i></div>
-            </button>
+              <div class="increase__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-up"></i></div>
+              <span product-price="${(currency.rate * item.price).toFixed(2)}" product-id="${item.id}">1</span>
+              <div class="decrease__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
           </div>
         </div>
       </div>`
