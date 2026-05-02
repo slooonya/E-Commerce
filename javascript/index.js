@@ -4,6 +4,10 @@ document.addEventListener("languageChanged", () => {
   renderCategoryCards();
   renderCategories();
   rerenderVisibleProducts();
+
+  const activeSlide = +document.querySelector(".active-bullet").getAttribute("img-id");
+
+  banner_img_slider(activeSlide);
 });
 
 // banner image slider
@@ -16,15 +20,15 @@ const banner__text__h2 = document.querySelector(".banner__text h2");
 let images__data = [
     {
         src: `images/banner-1.webp`,
-        title: i18next.t("smartWatches")
+        title: "smartWatches"
     },
     {
         src: `images/banner-2.webp`,
-        title: i18next.t("phones")
+        title: "phones"
     },
     {
         src: `images/banner-3.jpg`,
-        title: i18next.t("laptops")
+        title: "laptops"
     }
 ];
 
@@ -87,7 +91,7 @@ banner__previous.onclick = function() {
 }
 
 function banner_img_slider(index) {
-    banner__text__h2.textContent = images__data[index].title;
+    banner__text__h2.textContent = i18next.t(images__data[index].title);
     banner__images.style.cssText = `background: url(${images__data[index].src}) no-repeat; background-size: cover`;
     bullets[index].classList.add("active-bullet");
 }
