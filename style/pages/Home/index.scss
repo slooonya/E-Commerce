@@ -110,12 +110,16 @@
     }
 
     .categories__cards__container{
-        display: grid;
-        grid-template-columns: repeat(10, 20%);
+        display: flex !important;
+        flex-flow: row nowrap !important;
+        gap: 30px;
         transition: all 1s linear;
         overflow: hidden;
+        scroll-behavior: smooth;
     }
-    .categories__cards__container > div{
+    .categories__cards__container > button{
+        flex: 0 0 calc((100% - 120px) / 5);
+        min-width: 0;
         position: relative;
         height: 250px;
         background-color: #FFF;
@@ -125,10 +129,7 @@
         border-radius: 15px;
         cursor: pointer;
         transition: all 0.3s linear;
-        margin: {
-            left: 15px;
-            right: 15px
-        };
+        border: none;
     //children
         > img{
             width: 100%;
@@ -154,7 +155,7 @@
         }
     }
     
-    div.laptops__category > img{
+    .laptops__category > img{
         transform: scale(0.85);
     }
 }
@@ -204,10 +205,10 @@
 
     .categories__section{
 
-        .categories__cards__container{
-            grid-template-columns: repeat(10, calc(100% / 3));
+        .categories__cards__container > button{
+            flex-basis: calc((100% - 60px) / 3);
         }
-        .categories__cards__container > div{
+        .categories__cards__container > button{
             height: 190px;
         //children
         > img{
@@ -243,15 +244,12 @@
             width: 25px;
             height: 25px;
         }
-    
-    }
+        }
 
     .categories__section{
-        .categories__cards__container{
-            grid-template-columns: repeat(10, 50%);
-        }
-        .categories__cards__container > div{
-            height: 150px;            
+        .categories__cards__container > button{
+            flex-basis: calc((100% - 30px) / 2);
+            height: 150px;
         }
     }
 
