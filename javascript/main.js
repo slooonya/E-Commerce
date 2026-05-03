@@ -4,6 +4,7 @@
 // Storing the Promise (not just the resolved value) so concurrent callers
 // during a still-pending fetch all share the same in-flight request.
 const _fetch_cache = new Map();
+const PRODUCTS_API_URL = "https://dummyjson.com/products?limit=0";
 
 // loading page
 window.addEventListener("load", () => {
@@ -194,45 +195,68 @@ const all_products = new Set();
 const categories__logos = [
 {
   name: "smartphones",
+  label: "Smartphones",
   src: "images/samrtphones.jpg"
 },
 {
-  name: "electronics",
-  src: "images/electronics.jpg"
-},
-{
   name: "laptops",
+  label: "Laptops",
   src: "images/laptops.jpg"
 },
 {
-  name: "watches",
+  name: "mens-watches",
+  label: "Watches",
   src: "images/watches.webp"
 },
 {
-  name: "shoes",
+  name: "mens-shoes",
+  label: "Shoes",
   src: "images/shoes.png"
 },
 {
   name: "fragrances",
+  label: "Fragrances",
   src: "images/Fragrances.jpg"
 },
 {
-  name: "skincare",
+  name: "skin-care",
+  label: "Skin Care",
   src: "images/skincare.jpg"
-},,
+},
 {
-  name: "men's products",
+  name: "mens-shirts",
+  label: "Men's Shirts",
   src: "images/Men's products.jpg"
-},    
+},
 {
-  name: "women's products",
+  name: "womens-dresses",
+  label: "Women's Dresses",
   src: "images/Women's products.jpg"
 },
 {
-  name: "jewelery",
-  src: "images/jewelry.webp"
+  name: "womens-jewellery",
+  label: "Jewellery",
+  src: "images/jewelry.webp",
+},
+{
+  name: "groceries",
+  label: "Groceries",
+  src: "images/Groceries.jpg"
+},
+{
+  name: "home-decoration",
+  label: "Home Decoration",
+  src: "images/Home-Decoration.png",
 }
 ];
+
+function category_matches(product__category, selected__category) {
+  return product__category == selected__category;
+}
+
+function category_data(category) {
+  return categories__logos.find(ele => ele.name == category) || null;
+}
 
 fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
@@ -254,17 +278,17 @@ fetch_data("all_products.json").then(res => {
   categories.forEach((ele) => {
     let category = document.createElement("li");
     let category__logo = document.createElement("img");
+    let current__category = category_data(ele);
 
     category.className = "category p-2";
     category.setAttribute("category", ele);
+    category.setAttribute("label", current__category ? current__category.label : ele);
     category__logo.classList.add("mx-2")
 
-    categories__logos.forEach(el => {
-        if(el.name == ele) {
-          category__logo.src = el.src;
-          category__logo.alt = el.name + " category";
-        }
-    });
+    if(current__category) {
+      category__logo.src = current__category.src;
+      category__logo.alt = current__category.label + " category";
+    }
 
     category.prepend(category__logo);
     category.append(category__link(ele));
@@ -288,8 +312,8 @@ fetch_data("all_products.json").then(res => {
   function category__link(txt) {
     let category__link = document.createElement("a");
     category__link.classList.add("text-decoration-none");
-    category__link.href = `#categories__section`;
-    category__link.text = txt;
+    category__link.href = `#products__section`;
+    category__link.text = category_data(txt) ? category_data(txt).label : txt;
 
     return category__link;
   }
@@ -307,6 +331,9 @@ fetch_data("all_products.json").then(res => {
   categories__items.forEach(ele => {
     ele.onclick = function(e) {
         categories__options.classList.remove("listed");
+        if(typeof display_products_by_category === "function") {
+          display_products_by_category(ele.getAttribute("category"), ele.getAttribute("label"));
+        }
     }
   });
 
@@ -352,11 +379,23 @@ cart__ico.onclick = function() {
 // ==== Global function ====
 
 function fetch_data(url) {
-  if (_fetch_cache.has(url)) {
-    return _fetch_cache.get(url);
+  const request_url = url === "all_products.json" ? PRODUCTS_API_URL : url;
+
+  if (_fetch_cache.has(request_url)) {
+    return _fetch_cache.get(request_url);
   }
-  const req = fetch(url).then(res => res.json());
-  _fetch_cache.set(url, req);
+
+  const req = fetch(request_url)
+    .then(res => res.json())
+    .then(data => {
+      if (request_url === PRODUCTS_API_URL && Array.isArray(data.products)) {
+        return data.products;
+      }
+
+      return data;
+    });
+
+  _fetch_cache.set(request_url, req);
   return req;
 }
 
@@ -364,11 +403,9 @@ function set_products_obj(element, index) {
 all_products.add(element);
 element.id = index;
 
-if(["Pants","Jackets","Hoodies","Jackets","Hoodies","T-shirt","Jackets","T-shirt","Jackets", "T-shirts"].includes(element.category)) {
-  element.category = "men's products";
+if(category_data(element.category)) {
+  categories.add(element.category);
 }
-
-categories.add(element.category);
 }
 
 function change_currency() {
@@ -561,18 +598,16 @@ function render_preview(element) {
 
       add__to__cart.onclick = function(e) {
         let item = +e.currentTarget.getAttribute("product-id");
+        let update__items = new Set(localStorage.getItem("cart-items") ? JSON.parse(localStorage.getItem("cart-items")) : [...cart__items]);
+        let already__in__cart = update__items.has(item);
 
-        if(localStorage.getItem("cart-items")) {
-          let update__items = new Set( JSON.parse(localStorage.getItem("cart-items")));
-          update__items.add(item);
-          localStorage.setItem("cart-items", JSON.stringify([...update__items]));
-        } else{
-          cart__items.add(item);
-          localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
-        }
+        update__items.add(item);
+        cart__items.clear();
+        update__items.forEach(ele => cart__items.add(ele));
+        localStorage.setItem("cart-items", JSON.stringify([...update__items]));
 
         cart_items_num();
-        show_add_to_cart_feedback(e.currentTarget);
+        show_add_to_cart_feedback(e.currentTarget, already__in__cart);
       }
 
 
@@ -701,12 +736,12 @@ function cart_items_num() {
   }
 }
 
-function show_add_to_cart_feedback(buttonEl) {
+function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   const toast = document.createElement("div");
   toast.className = "cart__feedback__toast";
   toast.setAttribute("role", "status");
   toast.setAttribute("aria-live", "polite");
-  toast.textContent = "Added to cart";
+  toast.textContent = already__in__cart ? "Already in cart" : "Added to cart";
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => {
@@ -724,7 +759,7 @@ function show_add_to_cart_feedback(buttonEl) {
   buttonEl.disabled = true;
   buttonEl.classList.add("add__to__cart--added");
   buttonEl.innerHTML =
-    '<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>Added!';
+    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? "Already Added" : "Added!"}`;
 
   window.setTimeout(() => {
     toast.classList.remove("cart__feedback__toast--visible");
