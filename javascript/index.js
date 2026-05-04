@@ -1,9 +1,11 @@
-import { categories__logos, fetch_data, all_products, display_product_preview, renderCategories, change_currency } from "./main.js";
+import { categories__logos, fetch_data, all_products, display_product_preview, renderCategories, change_currency, display_loading_spinner } from "./main.js";
+
+let currentCategory = null;
 
 document.addEventListener("languageChanged", () => {
   renderCategoryCards();
   renderCategories();
-  rerenderVisibleProducts();
+  rerenderProducts();
 
   const activeSlide = +document.querySelector(".active-bullet").getAttribute("img-id");
 
@@ -205,31 +207,34 @@ const categories__previous = document.querySelector('.categories__previous');
 function renderCategoryCards() {
     categories__cards__container.innerHTML = "";
 
-categories__logos.forEach((ele, i) => {
-    let category__card = document.createElement("button");
-    let category__card__hover = document.createElement("div");
+    categories__logos.forEach((ele, i) => {
+        let category__card = document.createElement("button");
+        let category__card__hover = document.createElement("div");
 
-    category__card.className = `${ele.name}__category`;
-    category__card.type = "button";
-    category__card.setAttribute("category-id", i);
-    category__card.setAttribute("name", ele.name);
+        category__card.className = `${ele.name}__category`;
+        category__card.type = "button";
+        category__card.setAttribute("category-id", i);
+        category__card.setAttribute("name", ele.name);
+        category__card.setAttribute("label", ele.name || ele.label);
 
         category__card.innerHTML = `
-        <img src="${ele.src}" alt="${i18next.t(ele.name)} ${i18next.t("category")}">
+            <img src="${ele.src}" alt="${i18next.t(ele.name)} ${i18next.t("category")}">
 
-        <div class="category__card__hover d-flex justify-content-center align-items-center">
-            ${i18next.t(ele.name)}
-        </div>
-        `;
+            <div class="category__card__hover d-flex justify-content-center align-items-center">
+                ${i18next.t(ele.name)}
+            </div>
+            `;
 
-
-    category__card.addEventListener("click", () => {
-        showCategoryProducts(ele.name);
-    });
+        category__card.addEventListener("click", () => {
+            showCategoryProducts(ele.name);
+        });
 
         categories__cards__container.append(category__card);
     });
 }
+
+const category__cards = document.querySelectorAll(".categories__cards__container > button");
+
 
 function renderProductList(products) {
     products__container.innerHTML = "";
@@ -243,7 +248,9 @@ function renderProductList(products) {
     change_currency();
 }
 
-function showCategoryProducts(category) {
+export function showCategoryProducts(category) {
+    currentCategory = category;
+
     const title = document.querySelector(".products__section h2");
 
     title.dataset.category = category;
@@ -256,22 +263,6 @@ function showCategoryProducts(category) {
     );
 
     renderProductList(filteredProducts);
-}
-
-function rerenderVisibleProducts() {
-    const title = document.querySelector(".products__section h2");
-    const category = title.dataset.category;
-
-    if (category) {
-        showCategoryProducts(category);
-        return;
-    }
-
-    const visibleProducts = [...displayed__items].map(index =>
-        [...all_products][index]
-    );
-
-    renderProductList(visibleProducts);
 }
 
 categories__next.onclick = function() {
@@ -290,6 +281,7 @@ const products__container = document.querySelector(".products__container");
 
 window.addEventListener("load", () => {
     fetch_data('all_products.json').then(res => {
+        currentCategory = null;
         [...all_products].forEach(product => {
             render_products(product);
         });
@@ -299,34 +291,6 @@ window.addEventListener("load", () => {
     });
 
 });
-
-function display_products_by_category(selected__category, selected__label) {
-    let category__title = document.querySelector(".products__section h2");
-    category__title.textContent = selected__label || selected__category;
-
-    display_loading_spinner(products__container);
-
-    fetch_data("all_products.json").then(res => {
-        const products = all_products.size ? [...all_products] : res;
-        const category__products = products.filter(el => category_matches(el.category, selected__category));
-
-        products__container.classList.remove("loading");
-
-        if(category__products.length) {
-            products__container.classList.remove("no__results");
-            category__products.forEach(el => {
-                render_products(el);
-            });
-
-            set_product_rating();
-            display_product_preview();
-            change_currency()
-        } else {
-            products__container.classList.add("no__results");
-            products__container.innerHTML = "<h3>No Results</h3>";
-        }
-    });
-}
 
 // global function
 function render_products(ele) {
@@ -398,5 +362,12 @@ function set_product_rating() {
             [...product__rating__icons][i].classList.add("fa-solid");
         }
     });
+}
 
+function rerenderProducts() {
+    if (currentCategory) {
+        showCategoryProducts(currentCategory);
+    } else {
+        renderProductList([...all_products]);
+    }
 }

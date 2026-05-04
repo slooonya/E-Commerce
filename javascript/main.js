@@ -1,4 +1,6 @@
 import i18next, { updateContent } from "./i18n.js";
+import { showCategoryProducts } from "./index.js";
+
 
 // In-memory cache for fetch_data to avoid redundant network requests.
 // Storing the Promise (not just the resolved value) so concurrent callers
@@ -115,18 +117,18 @@ const currency__list__ico = document.querySelector(".currency__container i");
 const currencies__data = [];
 
 if(localStorage.getItem("currency")) {
-let the__currency__data = JSON.parse(localStorage.getItem("currency"));
-currency__name.setAttribute("the-rate", the__currency__data.rate);
-currency__name.setAttribute("the-currency", the__currency__data.name);
-currency__name.textContent = the__currency__data.name;
+  let the__currency__data = JSON.parse(localStorage.getItem("currency"));
+  currency__name.setAttribute("the-rate", the__currency__data.rate);
+  currency__name.setAttribute("the-currency", the__currency__data.name);
+  currency__name.textContent = the__currency__data.name;
 
-currency__logo.src = `https://flagcdn.com/w40/${the__currency__data.name.slice(0, the__currency__data.name.length - 1).toLowerCase()}.png`;
-currency__logo.alt = the__currency__data.name;
-} else{
-let usd = {
-  name: "USD",
-  rate: 1.0
-}
+  currency__logo.src = `https://flagcdn.com/w40/${the__currency__data.name.slice(0, the__currency__data.name.length - 1).toLowerCase()}.png`;
+  currency__logo.alt = the__currency__data.name;
+} else {
+  let usd = {
+    name: "USD",
+    rate: 1.0
+  }
 
 localStorage.setItem("currency", JSON.stringify(usd));
 }
@@ -136,153 +138,152 @@ localStorage.setItem("currency", JSON.stringify(usd));
 const currency_api_key = (window.APP_CONFIG && window.APP_CONFIG.CURRENCY_API_KEY) || "";
 
 if (currency_api_key) {
-fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
-.then(res => {  
+  fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
+    .then(res => {  
 
-  for(let i in res.rates) {
-    if(['EUR', 'USD', 'GBP', 'EGP'].includes(i)) {
-        let cur = {
-            name: i,
-            rate: res.rates[i],
-            logo__src: `https://flagcdn.com/w40/${i.slice(0, i.length - 1).toLowerCase()}.png`
+      for(let i in res.rates) {
+        if(['EUR', 'USD', 'GBP', 'EGP'].includes(i)) {
+            let cur = {
+                name: i,
+                rate: res.rates[i],
+                logo__src: `https://flagcdn.com/w40/${i.slice(0, i.length - 1).toLowerCase()}.png`
+            }
+            currencies__data.push(cur);
         }
-        currencies__data.push(cur);
-    }
-  }
-
-  let currency__options = document.createElement("ul");
-  currency__options.classList.add("currency__options", "list-unstyled", "p-1");
-
-  // when tabbed through all the options -> close the dropdown to prevent it from covering content
-  currency__options.addEventListener("focusout", () => {
-    setTimeout(() => {
-      if (!currency__options.contains(document.activeElement)) {
-        currency__options.classList.remove("listed");
       }
-    }, 0);
-  });
 
-  currencies__data.forEach((ele) => {
-    let currency = document.createElement("li"),
-        currency__option__logo = document.createElement("img"),
-        currency__option__name = document.createElement("span");
+      let currency__options = document.createElement("ul");
+      currency__options.classList.add("currency__options", "list-unstyled", "p-1");
 
-    currency.tabIndex = 0;
-    currency.setAttribute("role", "option");
-    
-    currency__option__logo.src = ele.logo__src;
-    currency__option__logo.alt = ele.name;
+      // when tabbed through all the options -> close the dropdown to prevent it from covering content
+      currency__options.addEventListener("focusout", () => {
+        setTimeout(() => {
+          if (!currency__options.contains(document.activeElement)) {
+            currency__options.classList.remove("listed");
+          }
+        }, 0);
+      });
 
-    currency__option__name.textContent = ele.name;
-    currency__option__name.setAttribute("the-currency", ele.name);
-    currency__option__name.setAttribute("the-rate", ele.rate);
+      currencies__data.forEach((ele) => {
+        let currency = document.createElement("li"),
+            currency__option__logo = document.createElement("img"),
+            currency__option__name = document.createElement("span");
 
-    currency__container.append(currency__options);
-    currency.append(currency__option__logo, currency__option__name);
-    currency__options.append(currency);
-    
-    document.querySelector(".cart__items__preview").classList.remove("listed__cart");
-  });
+        currency.tabIndex = 0;
+        currency.setAttribute("role", "option");
+        
+        currency__option__logo.src = ele.logo__src;
+        currency__option__logo.alt = ele.name;
 
-  function toggleCurrencyDropdown() {
-    if (!currency__options.classList.contains("listed")) {
-        currency__options.classList.add("listed");
-        currency__container.setAttribute("aria-expanded", "true");
-        currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
-    } else {
+        currency__option__name.textContent = ele.name;
+        currency__option__name.setAttribute("the-currency", ele.name);
+        currency__option__name.setAttribute("the-rate", ele.rate);
+
+        currency__container.append(currency__options);
+        currency.append(currency__option__logo, currency__option__name);
+        currency__options.append(currency);
+        
+        document.querySelector(".cart__items__preview").classList.remove("listed__cart");
+      });
+
+      function toggleCurrencyDropdown() {
+        if (!currency__options.classList.contains("listed")) {
+            currency__options.classList.add("listed");
+            currency__container.setAttribute("aria-expanded", "true");
+            currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
+        } else {
+            currency__options.classList.remove("listed");
+            currency__container.setAttribute("aria-expanded", "false");
+            currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+        }
+      }
+
+      currency__container.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleCurrencyDropdown();
+      });
+
+      currency__container.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleCurrencyDropdown();
+        }
+      });
+
+      let currencies__items = document.querySelectorAll(".currency__options li");
+
+      function selectCurrency(item) {
         currency__options.classList.remove("listed");
         currency__container.setAttribute("aria-expanded", "false");
         currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
-    }
-  }
 
-  currency__container.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleCurrencyDropdown();
-  });
+        currency__logo.src = item.children[0].getAttribute("src");
+        currency__logo.alt = item.children[1].textContent;
 
-  currency__container.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleCurrencyDropdown();
-    }
-  });
+        currency__name.textContent = item.children[1].textContent;
+        currency__name.setAttribute("the-currency", item.children[1].textContent);
+        currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
 
-  let currencies__items = document.querySelectorAll(".currency__options li");
+        let currency__obj__in__localStorage = {
+          name: currency__name.getAttribute("the-currency"),
+          rate: currency__name.getAttribute("the-rate")
+        };
+        
+        localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
 
-  function selectCurrency(item) {
-    currency__options.classList.remove("listed");
-    currency__container.setAttribute("aria-expanded", "false");
-    currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+        // change product currency
+        let product__prices = document.querySelectorAll(".product__price");
+        let current__currency = JSON.parse(localStorage.getItem("currency"));
 
-    currency__logo.src = item.children[0].getAttribute("src");
-    currency__logo.alt = item.children[1].textContent;
+        product__prices.forEach(ele => {
+          let price = +ele.getAttribute("price-USD");
+          ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
+        });
 
-    currency__name.textContent = item.children[1].textContent;
-    currency__name.setAttribute("the-currency", item.children[1].textContent);
-    currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
-
-    let currency__obj__in__localStorage = {
-      name: currency__name.getAttribute("the-currency"),
-      rate: currency__name.getAttribute("the-rate")
-    };
-    
-    localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
-
-    // change product currency
-    let product__prices = document.querySelectorAll(".product__price");
-    let current__currency = JSON.parse(localStorage.getItem("currency"));
-
-    product__prices.forEach(ele => {
-      let price = +ele.getAttribute("price-USD");
-      ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
-    });
-
-    currency__container.focus();
-  }
-
-  currencies__items.forEach(ele => {
-    ele.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectCurrency(ele);
-    });
-
-    ele.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        selectCurrency(ele);
+        currency__container.focus();
       }
-    });
-  });
 
-});
+      currencies__items.forEach(ele => {
+        ele.addEventListener("click", (e) => {
+            e.stopPropagation();
+            selectCurrency(ele);
+        });
+
+        ele.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            selectCurrency(ele);
+          }
+        });
+      });
+  });
 }
 
 window.addEventListener("load", () => {
-let currency__options__items = document.querySelectorAll(".currency__options li");
+  let currency__options__items = document.querySelectorAll(".currency__options li");
 
   currency__options__items.forEach(ele => {
     ele.addEventListener("click", () => {
       let products__price = document.querySelectorAll(".product__price"),
-          theCurrency = JSON.parse(localStorage.getItem("currency"));
+      theCurrency = JSON.parse(localStorage.getItem("currency"));
       
-        products__price.forEach(ele => {
-            let the_price_USD = parseInt(ele.getAttribute("price-USD"));
-            let the_new_price = (the_price_USD * +theCurrency.rate).toFixed(2);
+      products__price.forEach(ele => {
+        let the_price_USD = parseInt(ele.getAttribute("price-USD"));
+          let the_new_price = (the_price_USD * +theCurrency.rate).toFixed(2);
             
-            ele.textContent = the_new_price + " " + theCurrency.name;
+          ele.textContent = the_new_price + " " + theCurrency.name;
       });
     });
-  })
+  });
 });
 
 // set categories
 const categories__btn = document.querySelector(".categories__btn");
 const categories = new Set();
-const all_products = new Set();
-const categories__logos = [
+export const all_products = new Set();
+export const categories__logos = [
 {
   name: "smartphones",
   label: "Smartphones",
@@ -316,15 +317,15 @@ const categories__logos = [
 {
   name: "mens-shirts",
   label: "Men's Shirts",
-  src: "images/Men's products.jpg"
+  src: "images/mens-shirts.webp"
 },
 {
   name: "womens-dresses",
   label: "Women's Dresses",
-  src: "images/Women's products.jpg"
+  src: "images/womens-dresses.webp"
 },
 {
-  name: "womens-jewelery",
+  name: "womens-jewellery",
   label: "Jewelery",
   src: "images/jewelry.webp",
 },
@@ -366,21 +367,33 @@ export function renderCategories() {
 
   categories.forEach((ele) => {
     let category = document.createElement("li");
-    let category__logo = document.createElement("img");
-    let current__category = category_data(ele);
-
     category.className = "category p-2";
     category.setAttribute("category", ele);
-    category.setAttribute("label", current__category ? current__category.label : ele);
-    category__logo.classList.add("mx-2")
+    category.setAttribute("label", category_data(ele) ? category_data(ele).label : ele);
 
-    if(current__category) {
-      category__logo.src = current__category.src;
-      category__logo.alt = current__category.label + " category";
-    }
+    let category__logo = document.createElement("img");
+    category__logo.classList.add("mx-2");
 
+    categories__logos.forEach(el => {
+      if(el.name == ele) {
+        category__logo.src = el.src;
+        category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
+      }
+    });
+
+    let category__link = document.createElement("a");
+    category__link.classList.add("text-decoration-none");
+    category__link.href = `#products__section`;
+    category__link.textContent = i18next.t(ele);
+    
     category.prepend(category__logo);
     category.append(category__link);
+
+    category.addEventListener("click", () => {
+      categories__options.classList.remove("listed");
+      showCategoryProducts(ele);
+    });
+
     categories__options.append(category);
   });
 
@@ -405,16 +418,14 @@ categories__btn.onclick = function() {
 
 let categories__items = document.querySelectorAll(".category");
 
-  categories__items.forEach(ele => {
-    ele.onclick = function(e) {
-        categories__options.classList.remove("listed");
-        if(typeof display_products_by_category === "function") {
-          display_products_by_category(ele.getAttribute("category"), ele.getAttribute("label"));
-        }
+categories__items.forEach(ele => {
+  ele.onclick = function(e) {
+      categories__options.classList.remove("listed");
+      if(typeof showCategoryProducts === "function") {
+        showCategoryProducts(ele.getAttribute("category"));
+      }
     }
-  });
-
-}); 
+});
 
 // product preview
 export function display_product_preview() {
@@ -452,10 +463,9 @@ cart__ico.onclick = function() {
   }
 }
 
-
 // ==== Global function ====
 
-function fetch_data(url) {
+export function fetch_data(url) {
   const request_url = url === "all_products.json" ? PRODUCTS_API_URL : url;
 
   if (fetch_cache.has(request_url)) {
@@ -480,10 +490,10 @@ function set_products_obj(element, index) {
   all_products.add(element);
   element.id = index;
 
-if(category_data(element.category)) {
-  categories.add(element.category);
+  if(category_data(element.category)) {
+    categories.add(element.category);
+  }
 }
-
 
 export function change_currency() {
   let currencies__items = document.querySelectorAll(".currency__options li");
@@ -791,7 +801,7 @@ function render_preview(element) {
   }
 }
 
-function display_loading_spinner(container) {
+export function display_loading_spinner(container) {
   container.innerHTML = "";
   container.classList.add("loading");
   container.innerHTML = `<section class="products__loader justify-content-center align-items-center">
@@ -814,7 +824,7 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   toast.className = "cart__feedback__toast";
   toast.setAttribute("role", "status");
   toast.setAttribute("aria-live", "polite");
-  toast.textContent = already__in__cart ? "Already in cart" : "Added to cart";
+  toast.textContent = already__in__cart ? i18next.t("alreadyInCart") : i18next.t("addedToCart");
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => {
@@ -829,10 +839,13 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   }
 
   const originalHTML = buttonEl.innerHTML;
-  buttonEl.disabled = true;
+  buttonEl.setAttribute("aria-disabled", "true");
+  buttonEl.classList.add("add__to__cart--disabled");
   buttonEl.classList.add("add__to__cart--added");
   buttonEl.innerHTML =
-    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? "Already Added" : "Added!"}`;
+    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? i18next.t("alreadyAdded") : i18next.t("added")}`;
+
+  buttonEl.focus();
 
   window.setTimeout(() => {
     toast.classList.remove("cart__feedback__toast--visible");
@@ -840,13 +853,14 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   }, 2400);
 
   window.setTimeout(() => {
-    buttonEl.disabled = false;
+    buttonEl.removeAttribute("aria-disabled");
+    buttonEl.classList.remove("add__to__cart--disabled");
     buttonEl.classList.remove("add__to__cart--added");
     buttonEl.innerHTML = originalHTML;
   }, 1800);
 }
 
-function display_cart_preview() {
+export function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
       currency = JSON.parse(localStorage.getItem("currency"));
@@ -892,7 +906,7 @@ function display_cart_preview() {
     </div>`;
 
     let cart__items = document.querySelector(".cart__items");
-  // render items 
+    // render items 
     items__id.forEach(ele => {
       let item = [...all_products][+ele];
       let product__item = document.createElement("div");
@@ -935,11 +949,10 @@ function display_cart_preview() {
       cart__items.append(product__item);
     });
 
-
-// functions  
-  // delete item
+    // functions  
+    // delete item
     let del__btn = document.querySelectorAll(".cart__item .delete__btn");
-      cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
+    cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
 
     del__btn.forEach(ele => {
       ele.onclick = function() {
@@ -968,7 +981,7 @@ function display_cart_preview() {
         const nextFocusable = cart__items__preview.querySelector("button");
 
         nextFocusable.focus();
-    }
+      }
     });
 
     // product quantity
@@ -1014,7 +1027,6 @@ function display_cart_preview() {
       }, 0);
 
       cart__summary__total.textContent = total.toFixed(2) + ` ${currency.name}`;
-    
     }
 
     // open product preview
