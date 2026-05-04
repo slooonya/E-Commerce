@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
   "devDependencies": {
     "i18next-cli": "^1.56.9",
     "jest": "^30.3.0"

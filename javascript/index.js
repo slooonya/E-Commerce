@@ -106,13 +106,15 @@ let search__results = document.createElement("ul");
 search__container__input.oninput = function() {
     search__container.classList.add("focused");
 
-    let search__word = new RegExp(this.value, "i");
+    // Don't build a RegExp from user input - it threw on "(" before
+    // and is also a ReDoS risk. Plain substring match works fine here.
+    let search__word = this.value.toLowerCase();
     
     fetch_data("all_products.json").then(res => {
         let results = new Set();
 
         all_products.forEach(ele => {
-            if(ele.title.search(search__word) !== -1){
+            if(ele.title.toLowerCase().includes(search__word)){
                 results.add(ele.title);
             }
         });
@@ -203,12 +205,14 @@ const categories__previous = document.querySelector('.categories__previous');
 function renderCategoryCards() {
     categories__cards__container.innerHTML = "";
 
-    categories__logos.forEach((ele, i) => {
-        let category__card = document.createElement("button");
-        category__card.className = `${ele.name}__category`;
-        category__card.type = "button";
-        category__card.setAttribute("category-id", i);
-        category__card.name = ele.name;
+categories__logos.forEach((ele, i) => {
+    let category__card = document.createElement("button");
+    let category__card__hover = document.createElement("div");
+
+    category__card.className = `${ele.name}__category`;
+    category__card.type = "button";
+    category__card.setAttribute("category-id", i);
+    category__card.setAttribute("name", ele.name);
 
         category__card.innerHTML = `
         <img src="${ele.src}" alt="${i18next.t(ele.name)} ${i18next.t("category")}">
@@ -218,9 +222,10 @@ function renderCategoryCards() {
         </div>
         `;
 
-        category__card.addEventListener("click", () => {
-            showCategoryProducts(ele.name);
-        });
+
+    category__card.addEventListener("click", () => {
+        showCategoryProducts(ele.name);
+    });
 
         categories__cards__container.append(category__card);
     });
@@ -282,28 +287,46 @@ categories__previous.onclick = function() {
 // products
 const products__show__more__btn = document.querySelector('.products__show__more__btn');
 const products__container = document.querySelector(".products__container");
-const displayed__items = new Set();
 
 window.addEventListener("load", () => {
     fetch_data('all_products.json').then(res => {
-        for(let i = 0; ; i++) {
-            let random__num = Math.trunc(Math.random() * all_products.size);
-            if(displayed__items.size == all_products.size) {
-                break;
-            }else{
-                displayed__items.add(random__num);
-            }
-        }
-    
-        displayed__items.forEach(index => {
-            render_products([...all_products][index]);
+        [...all_products].forEach(product => {
+            render_products(product);
         });
 
         set_product_rating();
         display_product_preview();
     });
-    
+
 });
+
+function display_products_by_category(selected__category, selected__label) {
+    let category__title = document.querySelector(".products__section h2");
+    category__title.textContent = selected__label || selected__category;
+
+    display_loading_spinner(products__container);
+
+    fetch_data("all_products.json").then(res => {
+        const products = all_products.size ? [...all_products] : res;
+        const category__products = products.filter(el => category_matches(el.category, selected__category));
+
+        products__container.classList.remove("loading");
+
+        if(category__products.length) {
+            products__container.classList.remove("no__results");
+            category__products.forEach(el => {
+                render_products(el);
+            });
+
+            set_product_rating();
+            display_product_preview();
+            change_currency()
+        } else {
+            products__container.classList.add("no__results");
+            products__container.innerHTML = "<h3>No Results</h3>";
+        }
+    });
+}
 
 // global function
 function render_products(ele) {
@@ -329,18 +352,18 @@ function render_products(ele) {
     div.setAttribute("product-id", ele.id);
     div.innerHTML = `
         <div class="product__img__container">
-            <img src=${img_src(ele)} alt="${ele.title}">
+            <img src="${escape_html(img_src(ele))}" alt="${escape_html(ele.title)}">
         </div>
 
         <div class="product__info p-2 ">
-            <span class="category__name">${i18next.t(ele.category)}</span>
-            <h3>${ele.title}</h3>
+            <span class="category__name">${(i18next.t(escape_html(ele.category)))}</span>
+            <h3>${escape_html(ele.title)}</h3>
             <span class="product__price" price-USD="${ele.price}">${product_price()}</span>
         </div>
 
         <div class="product__discount px-1">${product_discount()}</div>
 
-        <div class="product__rating" rate=${product_rate()}>
+        <div class="product__rating" rate="${product_rate()}">
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>

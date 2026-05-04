@@ -4,6 +4,7 @@ import i18next, { updateContent } from "./i18n.js";
 // Storing the Promise (not just the resolved value) so concurrent callers
 // during a still-pending fetch all share the same in-flight request.
 const fetch_cache = new Map();
+const PRODUCTS_API_URL = "https://dummyjson.com/products?limit=0";
 
 // loading page
 window.addEventListener("load", () => {
@@ -130,7 +131,12 @@ let usd = {
 localStorage.setItem("currency", JSON.stringify(usd));
 }
 
-fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=9271916030654b879d5f13f9d079b58c')
+// API key comes from javascript/config.js so it's not buried in the
+// app code. If no key is set, just stay on USD.
+const currency_api_key = (window.APP_CONFIG && window.APP_CONFIG.CURRENCY_API_KEY) || "";
+
+if (currency_api_key) {
+fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
 .then(res => {  
 
   for(let i in res.rates) {
@@ -252,6 +258,7 @@ fetch_data('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=927191603065
   });
 
 });
+}
 
 window.addEventListener("load", () => {
 let currency__options__items = document.querySelectorAll(".currency__options li");
@@ -274,49 +281,72 @@ let currency__options__items = document.querySelectorAll(".currency__options li"
 // set categories
 const categories__btn = document.querySelector(".categories__btn");
 const categories = new Set();
-export const all_products = new Set();
-export const categories__logos = [
-  {
-    name: "smartphones",
-    src: "images/samrtphones.jpg"
-  },
-  {
-    name: "electronics",
-    src: "images/electronics.jpg"
-  },
-  {
-    name: "laptops",
-    src: "images/laptops.jpg"
-  },
-  {
-    name: "watches",
-    src: "images/watches.webp"
-  },
-  {
-    name: "shoes",
-    src: "images/shoes.png"
-  },
-  {
-    name: "fragrances",
-    src: "images/Fragrances.jpg"
-  },
-  {
-    name: "skincare",
-    src: "images/skincare.jpg"
-  },,
-  {
-    name: "mensProducts",
-    src: "images/Men's products.jpg"
-  },    
-  {
-    name: "womensProducts",
-    src: "images/Women's products.jpg"
-  },
-  {
-    name: "jewelry",
-    src: "images/jewelry.webp"
-  }
+const all_products = new Set();
+const categories__logos = [
+{
+  name: "smartphones",
+  label: "Smartphones",
+  src: "images/samrtphones.jpg"
+},
+{
+  name: "laptops",
+  label: "Laptops",
+  src: "images/laptops.jpg"
+},
+{
+  name: "mens-watches",
+  label: "Watches",
+  src: "images/watches.webp"
+},
+{
+  name: "mens-shoes",
+  label: "Shoes",
+  src: "images/shoes.png"
+},
+{
+  name: "fragrances",
+  label: "Fragrances",
+  src: "images/Fragrances.jpg"
+},
+{
+  name: "skin-care",
+  label: "Skin Care",
+  src: "images/skincare.jpg"
+},
+{
+  name: "mens-shirts",
+  label: "Men's Shirts",
+  src: "images/Men's products.jpg"
+},
+{
+  name: "womens-dresses",
+  label: "Women's Dresses",
+  src: "images/Women's products.jpg"
+},
+{
+  name: "womens-jewelery",
+  label: "Jewelery",
+  src: "images/jewelry.webp",
+},
+{
+  name: "groceries",
+  label: "Groceries",
+  src: "images/Groceries.jpg"
+},
+{
+  name: "home-decoration",
+  label: "Home Decoration",
+  src: "images/Home-Decoration.png",
+}
 ];
+
+function category_matches(product__category, selected__category) {
+  return product__category == selected__category;
+}
+
+function category_data(category) {
+  return categories__logos.find(ele => ele.name == category) || null;
+}
 
 fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
@@ -336,23 +366,18 @@ export function renderCategories() {
 
   categories.forEach((ele) => {
     let category = document.createElement("li");
+    let category__logo = document.createElement("img");
+    let current__category = category_data(ele);
+
     category.className = "category p-2";
     category.setAttribute("category", ele);
+    category.setAttribute("label", current__category ? current__category.label : ele);
+    category__logo.classList.add("mx-2")
 
-    let category__logo = document.createElement("img");
-    category__logo.classList.add("mx-2");
-
-    categories__logos.forEach(el => {
-      if(el.name == ele) {
-        category__logo.src = el.src;
-        category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
-      }
-    });
-
-    let category__link = document.createElement("a");
-    category__link.classList.add("text-decoration-none");
-    category__link.href = `#categories__section`;
-    category__link.textContent = i18next.t(ele);
+    if(current__category) {
+      category__logo.src = current__category.src;
+      category__logo.alt = current__category.label + " category";
+    }
 
     category.prepend(category__logo);
     category.append(category__link);
@@ -380,11 +405,16 @@ categories__btn.onclick = function() {
 
 let categories__items = document.querySelectorAll(".category");
 
-categories__items.forEach(ele => {
-  ele.onclick = function(e) {
-      categories__options.classList.remove("listed");
-  }
-});
+  categories__items.forEach(ele => {
+    ele.onclick = function(e) {
+        categories__options.classList.remove("listed");
+        if(typeof display_products_by_category === "function") {
+          display_products_by_category(ele.getAttribute("category"), ele.getAttribute("label"));
+        }
+    }
+  });
+
+}); 
 
 // product preview
 export function display_product_preview() {
@@ -425,13 +455,24 @@ cart__ico.onclick = function() {
 
 // ==== Global function ====
 
-export function fetch_data(url) {
-  if (fetch_cache.has(url)) {
-    return fetch_cache.get(url);
+function fetch_data(url) {
+  const request_url = url === "all_products.json" ? PRODUCTS_API_URL : url;
+
+  if (fetch_cache.has(request_url)) {
+    return fetch_cache.get(request_url);
   }
 
-  const req = fetch(url).then(res => res.json());
-  fetch_cache.set(url, req);
+  const req = fetch(request_url)
+    .then(res => res.json())
+    .then(data => {
+      if (request_url === PRODUCTS_API_URL && Array.isArray(data.products)) {
+        return data.products;
+      }
+
+      return data;
+    });
+
+  fetch_cache.set(request_url, req);
   return req;
 }
 
@@ -439,12 +480,10 @@ function set_products_obj(element, index) {
   all_products.add(element);
   element.id = index;
 
-  if(["Pants","Jackets","Hoodies","Jackets","Hoodies","T-shirt","Jackets","T-shirt","Jackets", "T-shirts"].includes(element.category)) {
-    element.category = "mensProducts";
-  }
-
+if(category_data(element.category)) {
   categories.add(element.category);
 }
+
 
 export function change_currency() {
   let currencies__items = document.querySelectorAll(".currency__options li");
@@ -494,7 +533,7 @@ function render_preview(element) {
     </div>
 
     <div class="product__details p-2">
-        <h2 class="py-1">${product__obj.title}</h2><hr class="m-0">
+        <h2 class="py-1">${escape_html(product__obj.title)}</h2><hr class="m-0">
         <div class="product__description mb-4 mt-3">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam sint itaque saepe beatae, facilis dolorem ipsa ut, accusantium temporibus minima nisi ex porro vel deserunt quae autem voluptates eum ipsam Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam sint itaque saepe beatae</div>
 
         <div>
@@ -502,19 +541,19 @@ function render_preview(element) {
                 <span class="the__current__price">
                     <span class="currency__value" product-price="${(product__obj.price * JSON.parse(localStorage.getItem("currency")).rate).toFixed(2)}">
                     ${(product__obj.price * JSON.parse(localStorage.getItem("currency")).rate).toFixed(2)}</span>
-                    <span class="currency__name">${JSON.parse(localStorage.getItem("currency")).name}</span>
+                    <span class="currency__name">${escape_html(JSON.parse(localStorage.getItem("currency")).name)}</span>
                 </span>
                 <del class="the__old__price mx-2"></del>
             </div>
 
             <p class="availability mb-4">
-                ${i18next.t("availability")} : <span>${product_stock()}</span>
+                ${i18next.t("availability")} : <span>${escape_html(product_stock())}</span>
             </p>
 
         </div>
 
         <div class="product__sale mt-5">
-        <button class="add__to__cart py-2 px-3" product-id=${product__obj.id}>
+        <button class="add__to__cart py-2 px-3" product-id="${product__obj.id}">
             <i class="fa-solid fa-cart-shopping mx-2  text-decoration-none"></i>
             ${i18next.t("addToCart")}
         </button>
@@ -634,17 +673,16 @@ function render_preview(element) {
 
       add__to__cart.onclick = function(e) {
         let item = +e.currentTarget.getAttribute("product-id");
+        let update__items = new Set(localStorage.getItem("cart-items") ? JSON.parse(localStorage.getItem("cart-items")) : [...cart__items]);
+        let already__in__cart = update__items.has(item);
 
-        if(localStorage.getItem("cart-items")) {
-          let update__items = new Set( JSON.parse(localStorage.getItem("cart-items")));
-          update__items.add(item);
-          localStorage.setItem("cart-items", JSON.stringify([...update__items]));
-        } else{
-          cart__items.add(item);
-          localStorage.setItem("cart-items", JSON.stringify([...cart__items]));
-        }
+        update__items.add(item);
+        cart__items.clear();
+        update__items.forEach(ele => cart__items.add(ele));
+        localStorage.setItem("cart-items", JSON.stringify([...update__items]));
 
         cart_items_num();
+        show_add_to_cart_feedback(e.currentTarget, already__in__cart);
       }
 
 
@@ -771,6 +809,43 @@ function cart_items_num() {
   }
 }
 
+function show_add_to_cart_feedback(buttonEl, already__in__cart) {
+  const toast = document.createElement("div");
+  toast.className = "cart__feedback__toast";
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.textContent = already__in__cart ? "Already in cart" : "Added to cart";
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("cart__feedback__toast--visible");
+  });
+
+  const cartBadge = document.querySelector(".cart__items__num");
+  if (cartBadge) {
+    cartBadge.classList.remove("cart__items__num--bump");
+    void cartBadge.offsetWidth;
+    cartBadge.classList.add("cart__items__num--bump");
+  }
+
+  const originalHTML = buttonEl.innerHTML;
+  buttonEl.disabled = true;
+  buttonEl.classList.add("add__to__cart--added");
+  buttonEl.innerHTML =
+    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? "Already Added" : "Added!"}`;
+
+  window.setTimeout(() => {
+    toast.classList.remove("cart__feedback__toast--visible");
+    window.setTimeout(() => toast.remove(), 320);
+  }, 2400);
+
+  window.setTimeout(() => {
+    buttonEl.disabled = false;
+    buttonEl.classList.remove("add__to__cart--added");
+    buttonEl.innerHTML = originalHTML;
+  }, 1800);
+}
+
 function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
@@ -831,15 +906,14 @@ function display_cart_preview() {
         </button>
 
         <div class="cart__item__img__container p-2">
-          <img src=${img_src(item)} alt="product-image" product-id=${ele}>
+          <img src="${escape_html(img_src(item))}" alt="product-image" product-id="${ele}">
         </div>
 
         <div class="cart__item__info">
-          <h2>${item.title}</h2>
+          <h2>${escape_html(item.title)}</h2>
 
           <div class="cart__item__sale d-flex justify-content-between align-items-center mt-4">
-
-            <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${currency.name}</div>
+            <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${escape_html(currency.name)}</div>
 
             <div class="product__count d-flex justify-content-between" max-quantity="10">
 

@@ -308,6 +308,18 @@
         .add__to__cart{
             @include btn($green-hover, $green-color, 7px);
             cursor: pointer;
+            &:disabled{
+                cursor: default;
+            }
+            &.add__to__cart--added{
+                background-color: #6f8f00;
+                &:hover{
+                    background-color: #6f8f00;
+                }
+                &::after{
+                    display: none;
+                }
+            }
         }
 
     }
