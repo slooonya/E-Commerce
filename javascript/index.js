@@ -184,7 +184,7 @@ search__btn.onclick = function() {
                     search__container__input.value = "";
                 });
                 
-            } else{
+            } else {
                 products__container.classList.add("no__results");
                 products__container.innerHTML = `<h3>${i18next.t("noResults")}</h3>`;
                 location.href = "#products__section"; 
@@ -237,7 +237,7 @@ const category__cards = document.querySelectorAll(".categories__cards__container
 
 
 function renderProductList(products) {
-    products__container.innerHTML = "";
+    products__container.classList.remove("no__results");
 
     products.forEach(product => {
         render_products(product);
