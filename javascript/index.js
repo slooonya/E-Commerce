@@ -237,6 +237,7 @@ const category__cards = document.querySelectorAll(".categories__cards__container
 
 
 function renderProductList(products) {
+    products__container.innerHTML = "";
     products__container.classList.remove("no__results");
 
     products.forEach(product => {
