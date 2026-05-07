@@ -1,3 +1,17 @@
+import { categories__logos, fetch_data, all_products, display_product_preview, renderCategories, change_currency, display_loading_spinner } from "./main.js";
+
+let currentCategory = null;
+
+document.addEventListener("languageChanged", () => {
+  renderCategoryCards();
+  renderCategories();
+  rerenderProducts();
+
+  const activeSlide = +document.querySelector(".active-bullet").getAttribute("img-id");
+
+  banner_img_slider(activeSlide);
+});
+
 // banner image slider
 const banner__images = document.querySelector(".banner__images");
 const banner__bullets = document.querySelector(".banner__bullets");
@@ -8,15 +22,15 @@ const banner__text__h2 = document.querySelector(".banner__text h2");
 let images__data = [
     {
         src: `images/banner-1.webp`,
-        title: "Smart Watches"
+        title: "smartWatches"
     },
     {
         src: `images/banner-2.webp`,
-        title: "Phones"
+        title: "phones"
     },
     {
         src: `images/banner-3.jpg`,
-        title: "Laptops"
+        title: "laptops"
     }
 ];
 
@@ -26,7 +40,7 @@ for(let i = 0; i < images__data.length; i++) {
     bullet.type = "button";
 
     bullet.setAttribute("img-id", i);
-    bullet.setAttribute("aria-label", `Go to slide ${i + 1}`);
+    bullet.setAttribute("aria-label", `Go to slide ${i + 1}`); // !
 
     banner__bullets.append(bullet);
 }
@@ -79,7 +93,7 @@ banner__previous.onclick = function() {
 }
 
 function banner_img_slider(index) {
-    banner__text__h2.textContent = images__data[index].title;
+    banner__text__h2.textContent = i18next.t(images__data[index].title);
     banner__images.style.cssText = `background: url(${images__data[index].src}) no-repeat; background-size: cover`;
     bullets[index].classList.add("active-bullet");
 }
@@ -170,9 +184,9 @@ search__btn.onclick = function() {
                     search__container__input.value = "";
                 });
                 
-            } else{
+            } else {
                 products__container.classList.add("no__results");
-                products__container.innerHTML = "<h3>No Results</h3>";
+                products__container.innerHTML = `<h3>${i18next.t("noResults")}</h3>`;
                 location.href = "#products__section"; 
                 search__container__input.value = "";
                 if(search__results){
@@ -190,36 +204,67 @@ const categories__cards__container = document.querySelector('.categories__cards_
 const categories__next = document.querySelector('.categories__next');
 const categories__previous = document.querySelector('.categories__previous');
 
-categories__logos.forEach((ele, i) => {
-    let category__card = document.createElement("button");
-    let category__card__img = document.createElement("img");
-    let category__card__hover = document.createElement("div");
+function renderCategoryCards() {
+    categories__cards__container.innerHTML = "";
 
-    category__card.className = `${ele.name}__category`;
-    category__card.type = "button";
-    category__card.setAttribute("category-id", i);
-    category__card.setAttribute("name", ele.name);
-    category__card.setAttribute("label", ele.label || ele.name);
+    categories__logos.forEach((ele, i) => {
+        let category__card = document.createElement("button");
+        let category__card__hover = document.createElement("div");
 
-    category__card__hover.className = "category__card__hover d-flex justify-content-center align-items-center";
-    category__card__hover.textContent = ele.label || ele.name;
+        category__card.className = `${ele.name}__category`;
+        category__card.type = "button";
+        category__card.setAttribute("category-id", i);
+        category__card.setAttribute("name", ele.name);
+        category__card.setAttribute("label", ele.name || ele.label);
 
-    category__card__img.src = ele.src;
-    category__card__img.alt = (ele.label || ele.name) + " category";
+        category__card.innerHTML = `
+            <img src="${ele.src}" alt="${i18next.t(ele.name)} ${i18next.t("category")}">
 
-    categories__cards__container.append(category__card);
-    category__card.append(category__card__img);
-    category__card.append(category__card__hover);
-});
+            <div class="category__card__hover d-flex justify-content-center align-items-center">
+                ${i18next.t(ele.name)}
+            </div>
+            `;
+
+        category__card.addEventListener("click", () => {
+            showCategoryProducts(ele.name);
+        });
+
+        categories__cards__container.append(category__card);
+    });
+}
 
 const category__cards = document.querySelectorAll(".categories__cards__container > button");
-let count = 1;
 
-category__cards.forEach(ele => {
-    ele.addEventListener("click", () => {
-        display_products_by_category(ele.getAttribute("name"), ele.getAttribute("label"));
+
+function renderProductList(products) {
+    products__container.innerHTML = "";
+    products__container.classList.remove("no__results");
+
+    products.forEach(product => {
+        render_products(product);
     });
-});
+
+    set_product_rating();
+    display_product_preview();
+    change_currency();
+}
+
+export function showCategoryProducts(category) {
+    currentCategory = category;
+
+    const title = document.querySelector(".products__section h2");
+
+    title.dataset.category = category;
+    title.textContent = i18next.t(category);
+
+    products__container.innerHTML = "";
+
+     const filteredProducts = [...all_products].filter(product =>
+        product.category === category
+    );
+
+    renderProductList(filteredProducts);
+}
 
 categories__next.onclick = function() {
     let categories__card__width = document.querySelector(".categories__cards__container > button").clientWidth + 30;
@@ -231,17 +276,13 @@ categories__previous.onclick = function() {
     categories__cards__container.scrollLeft -= categories__card__width;
 }
 
-function image_slider_move(element) {
-    let translate__length = (element.clientWidth + 30) * count;
-    return translate__length;
-}
-
 // products
 const products__show__more__btn = document.querySelector('.products__show__more__btn');
 const products__container = document.querySelector(".products__container");
 
 window.addEventListener("load", () => {
     fetch_data('all_products.json').then(res => {
+        currentCategory = null;
         [...all_products].forEach(product => {
             render_products(product);
         });
@@ -251,34 +292,6 @@ window.addEventListener("load", () => {
     });
 
 });
-
-function display_products_by_category(selected__category, selected__label) {
-    let category__title = document.querySelector(".products__section h2");
-    category__title.textContent = selected__label || selected__category;
-
-    display_loading_spinner(products__container);
-
-    fetch_data("all_products.json").then(res => {
-        const products = all_products.size ? [...all_products] : res;
-        const category__products = products.filter(el => category_matches(el.category, selected__category));
-
-        products__container.classList.remove("loading");
-
-        if(category__products.length) {
-            products__container.classList.remove("no__results");
-            category__products.forEach(el => {
-                render_products(el);
-            });
-
-            set_product_rating();
-            display_product_preview();
-            change_currency()
-        } else {
-            products__container.classList.add("no__results");
-            products__container.innerHTML = "<h3>No Results</h3>";
-        }
-    });
-}
 
 // global function
 function render_products(ele) {
@@ -308,7 +321,7 @@ function render_products(ele) {
         </div>
 
         <div class="product__info p-2 ">
-            <span class="category__name">${escape_html(ele.category)}</span>
+            <span class="category__name">${(i18next.t(escape_html(ele.category)))}</span>
             <h3>${escape_html(ele.title)}</h3>
             <span class="product__price" price-USD="${ele.price}">${product_price()}</span>
         </div>
@@ -350,5 +363,12 @@ function set_product_rating() {
             [...product__rating__icons][i].classList.add("fa-solid");
         }
     });
+}
 
+function rerenderProducts() {
+    if (currentCategory) {
+        showCategoryProducts(currentCategory);
+    } else {
+        renderProductList([...all_products]);
+    }
 }

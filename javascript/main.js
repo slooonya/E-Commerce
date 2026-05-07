@@ -1,15 +1,26 @@
+import i18next, { updateContent } from "./i18n.js";
+import { showCategoryProducts } from "./index.js";
+
+
 // In-memory cache for fetch_data to avoid redundant network requests.
-// Declared at the top of the file so it is initialized before any
-// top-level call to fetch_data() (e.g. the currency API on line ~42).
 // Storing the Promise (not just the resolved value) so concurrent callers
 // during a still-pending fetch all share the same in-flight request.
-const _fetch_cache = new Map();
+const fetch_cache = new Map();
 const PRODUCTS_API_URL = "https://dummyjson.com/products?limit=0";
 
 // loading page
 window.addEventListener("load", () => {
-document.querySelector("main").style.display = "block";
-document.querySelector(".loader").style.display = "none";
+  const savedLang = localStorage.getItem('lang') || 'en';
+  i18next.changeLanguage(savedLang).then(() => {
+    updateContent();
+
+    language__name.textContent = savedLang === "ru" ? "Русский" : "English";
+
+    document.dispatchEvent(new CustomEvent("languageChanged"));
+  });
+
+  document.querySelector("main").style.display = "block";
+  document.querySelector(".loader").style.display = "none";
 });
 
 // scroll to top
@@ -22,6 +33,81 @@ if(scrollY >= 500) {
 }
 });
 
+// Language switch
+const language__container = document.querySelector(".language__container");
+const language__options = document.querySelector(".language__options");
+const language__name = document.querySelector(".language__name");
+const language__icon = document.querySelector(".language__container i");
+
+function selectLanguage(item) {
+  const lang = item.dataset.lang;
+  localStorage.setItem('lang', lang);
+
+  language__name.textContent = item.textContent;
+  language__options.classList.remove("listed");
+  language__container.setAttribute("aria-expanded", "false");
+
+  i18next.changeLanguage(lang).then(() => {
+    updateContent();
+    renderCategories();
+    rerenderCart();
+
+    document.dispatchEvent(
+      new CustomEvent("languageChanged")
+    );
+  });
+
+  closeLanguageDropdown();
+  language__container.focus();
+}
+
+language__container.addEventListener("click", () => {
+    if (!language__options.classList.contains("listed")) {
+        language__options.classList.add("listed");
+        language__container.setAttribute("aria-expanded", "true");
+        language__icon.className = "fa-solid fa-chevron-up mx-1";
+    } else {
+        closeLanguageDropdown();
+    }
+});
+
+language__container.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    language__container.click();
+  }
+});
+
+document.querySelectorAll(".language__item").forEach(item => {
+  item.addEventListener("click", (e) => {
+    e.stopPropagation();
+    selectLanguage(item);
+  });
+
+  item.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      selectLanguage(item);
+    }
+  });
+});
+
+// when tabbed through all the options -> close the dropdown to prevent it from covering content
+language__options.addEventListener("focusout", () => {
+  setTimeout(() => {
+    if (!language__options.contains(document.activeElement)) {
+      language__options.classList.remove("listed");
+    }
+  }, 0);
+});
+
+function closeLanguageDropdown() {
+  language__options.classList.remove("listed");
+  language__container.setAttribute("aria-expanded", "false");
+  language__icon.className = "fa-solid fa-chevron-down mx-1";
+}
+
 // Currency convert
 const currency__container = document.querySelector(".currency__container");
 const currency__name = document.querySelector(".currency__name");
@@ -31,18 +117,18 @@ const currency__list__ico = document.querySelector(".currency__container i");
 const currencies__data = [];
 
 if(localStorage.getItem("currency")) {
-let the__currency__data = JSON.parse(localStorage.getItem("currency"));
-currency__name.setAttribute("the-rate", the__currency__data.rate);
-currency__name.setAttribute("the-currency", the__currency__data.name);
-currency__name.textContent = the__currency__data.name;
+  let the__currency__data = JSON.parse(localStorage.getItem("currency"));
+  currency__name.setAttribute("the-rate", the__currency__data.rate);
+  currency__name.setAttribute("the-currency", the__currency__data.name);
+  currency__name.textContent = the__currency__data.name;
 
-currency__logo.src = `https://flagcdn.com/w40/${the__currency__data.name.slice(0, the__currency__data.name.length - 1).toLowerCase()}.png`;
-currency__logo.alt = the__currency__data.name;
-} else{
-let usd = {
-  name: "USD",
-  rate: 1.0
-}
+  currency__logo.src = `https://flagcdn.com/w40/${the__currency__data.name.slice(0, the__currency__data.name.length - 1).toLowerCase()}.png`;
+  currency__logo.alt = the__currency__data.name;
+} else {
+  let usd = {
+    name: "USD",
+    rate: 1.0
+  }
 
 localStorage.setItem("currency", JSON.stringify(usd));
 }
@@ -52,147 +138,152 @@ localStorage.setItem("currency", JSON.stringify(usd));
 const currency_api_key = (window.APP_CONFIG && window.APP_CONFIG.CURRENCY_API_KEY) || "";
 
 if (currency_api_key) {
-fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
-.then(res => {  
+  fetch_data(`https://api.currencyfreaks.com/v2.0/rates/latest?apikey=${encodeURIComponent(currency_api_key)}`)
+    .then(res => {  
 
-  for(let i in res.rates) {
-    if(['EUR', 'USD', 'GBP', 'EGP'].includes(i)) {
-        let cur = {
-            name: i,
-            rate: res.rates[i],
-            logo__src: `https://flagcdn.com/w40/${i.slice(0, i.length - 1).toLowerCase()}.png`
+      for(let i in res.rates) {
+        if(['EUR', 'USD', 'GBP', 'EGP'].includes(i)) {
+            let cur = {
+                name: i,
+                rate: res.rates[i],
+                logo__src: `https://flagcdn.com/w40/${i.slice(0, i.length - 1).toLowerCase()}.png`
+            }
+            currencies__data.push(cur);
         }
-        currencies__data.push(cur);
-    }
-  }
-
-  let currency__options = document.createElement("ul");
-  currency__options.classList.add("currency__options", "list-unstyled", "p-1");
-
-  // when tabbed through all the options -> close the dropdown to prevent it from covering content
-  currency__options.addEventListener("focusout", () => {
-    setTimeout(() => {
-      if (!currency__options.contains(document.activeElement)) {
-        currency__options.classList.remove("listed");
       }
-    }, 0);
-  });
 
-  currencies__data.forEach((ele) => {
-    let currency = document.createElement("li"),
-        currency__option__logo = document.createElement("img"),
-        currency__option__name = document.createElement("span");
+      let currency__options = document.createElement("ul");
+      currency__options.classList.add("currency__options", "list-unstyled", "p-1");
 
-    currency.tabIndex = 0;
-    currency.setAttribute("role", "option");
-    
-    currency__option__logo.src = ele.logo__src;
-    currency__option__logo.alt = ele.name;
+      // when tabbed through all the options -> close the dropdown to prevent it from covering content
+      currency__options.addEventListener("focusout", () => {
+        setTimeout(() => {
+          if (!currency__options.contains(document.activeElement)) {
+            currency__options.classList.remove("listed");
+          }
+        }, 0);
+      });
 
-    currency__option__name.textContent = ele.name;
-    currency__option__name.setAttribute("the-currency", ele.name);
-    currency__option__name.setAttribute("the-rate", ele.rate);
+      currencies__data.forEach((ele) => {
+        let currency = document.createElement("li"),
+            currency__option__logo = document.createElement("img"),
+            currency__option__name = document.createElement("span");
 
-    currency__container.append(currency__options);
-    currency.append(currency__option__logo, currency__option__name);
-    currency__options.append(currency);
-    
-    document.querySelector(".cart__items__preview").classList.remove("listed__cart");
-  });
+        currency.tabIndex = 0;
+        currency.setAttribute("role", "option");
+        
+        currency__option__logo.src = ele.logo__src;
+        currency__option__logo.alt = ele.name;
 
-  currency__container.addEventListener("click", () => {
-    if (!currency__options.classList.contains("listed")) {
-        currency__options.classList.add("listed");
-        currency__container.setAttribute("aria-expanded", "true");
-        currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
-    } else {
+        currency__option__name.textContent = ele.name;
+        currency__option__name.setAttribute("the-currency", ele.name);
+        currency__option__name.setAttribute("the-rate", ele.rate);
+
+        currency__container.append(currency__options);
+        currency.append(currency__option__logo, currency__option__name);
+        currency__options.append(currency);
+        
+        document.querySelector(".cart__items__preview").classList.remove("listed__cart");
+      });
+
+      function toggleCurrencyDropdown() {
+        if (!currency__options.classList.contains("listed")) {
+            currency__options.classList.add("listed");
+            currency__container.setAttribute("aria-expanded", "true");
+            currency__list__ico.className = "fa-solid fa-chevron-up mx-1";
+        } else {
+            currency__options.classList.remove("listed");
+            currency__container.setAttribute("aria-expanded", "false");
+            currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+        }
+      }
+
+      currency__container.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleCurrencyDropdown();
+      });
+
+      currency__container.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleCurrencyDropdown();
+        }
+      });
+
+      let currencies__items = document.querySelectorAll(".currency__options li");
+
+      function selectCurrency(item) {
         currency__options.classList.remove("listed");
         currency__container.setAttribute("aria-expanded", "false");
         currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
-    }
-  });
 
-  currency__container.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      currency__container.click();
-    }
-  });
+        currency__logo.src = item.children[0].getAttribute("src");
+        currency__logo.alt = item.children[1].textContent;
 
-  let currencies__items = document.querySelectorAll(".currency__options li");
+        currency__name.textContent = item.children[1].textContent;
+        currency__name.setAttribute("the-currency", item.children[1].textContent);
+        currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
 
-  function selectCurrency(item) {
-    currency__options.classList.remove("listed");
-    currency__container.setAttribute("aria-expanded", "false");
-    currency__list__ico.className = "fa-solid fa-chevron-down mx-1";
+        let currency__obj__in__localStorage = {
+          name: currency__name.getAttribute("the-currency"),
+          rate: currency__name.getAttribute("the-rate")
+        };
+        
+        localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
 
-    currency__logo.src = item.children[0].getAttribute("src");
-    currency__logo.alt = item.children[1].textContent;
+        // change product currency
+        let product__prices = document.querySelectorAll(".product__price");
+        let current__currency = JSON.parse(localStorage.getItem("currency"));
 
-    currency__name.textContent = item.children[1].textContent;
-    currency__name.setAttribute("the-currency", item.children[1].textContent);
-    currency__name.setAttribute("the-rate", item.children[1].getAttribute("the-rate"));
+        product__prices.forEach(ele => {
+          let price = +ele.getAttribute("price-USD");
+          ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
+        });
 
-    let currency__obj__in__localStorage = {
-      name: currency__name.getAttribute("the-currency"),
-      rate: currency__name.getAttribute("the-rate")
-    };
-    
-    localStorage.setItem("currency",  JSON.stringify(currency__obj__in__localStorage));
-
-    // change product currency
-    let product__prices = document.querySelectorAll(".product__price");
-    let current__currency = JSON.parse(localStorage.getItem("currency"));
-
-    product__prices.forEach(ele => {
-      let price = +ele.getAttribute("price-USD");
-      ele.textContent = (price * current__currency.rate).toFixed(2) + " " + current__currency.name;
-    });
-
-    currency__container.focus();
-  }
-
-  currencies__items.forEach(ele => {
-    ele.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectCurrency(ele);
-    });
-
-    ele.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        selectCurrency(ele);
+        currency__container.focus();
       }
-    });
-  });
 
-});
+      currencies__items.forEach(ele => {
+        ele.addEventListener("click", (e) => {
+            e.stopPropagation();
+            selectCurrency(ele);
+        });
+
+        ele.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            selectCurrency(ele);
+          }
+        });
+      });
+  });
 }
 
 window.addEventListener("load", () => {
-let currency__options__items = document.querySelectorAll(".currency__options li");
+  let currency__options__items = document.querySelectorAll(".currency__options li");
 
   currency__options__items.forEach(ele => {
     ele.addEventListener("click", () => {
       let products__price = document.querySelectorAll(".product__price"),
-          theCurrency = JSON.parse(localStorage.getItem("currency"));
+      theCurrency = JSON.parse(localStorage.getItem("currency"));
       
-        products__price.forEach(ele => {
-            let the_price_USD = parseInt(ele.getAttribute("price-USD"));
-            let the_new_price = (the_price_USD * +theCurrency.rate).toFixed(2);
+      products__price.forEach(ele => {
+        let the_price_USD = parseInt(ele.getAttribute("price-USD"));
+          let the_new_price = (the_price_USD * +theCurrency.rate).toFixed(2);
             
-            ele.textContent = the_new_price + " " + theCurrency.name;
+          ele.textContent = the_new_price + " " + theCurrency.name;
       });
     });
-  })
+  });
 });
 
 // set categories
 const categories__btn = document.querySelector(".categories__btn");
 const categories = new Set();
-const all_products = new Set();
-const categories__logos = [
+export const all_products = new Set();
+export const categories__logos = [
 {
   name: "smartphones",
   label: "Smartphones",
@@ -226,16 +317,16 @@ const categories__logos = [
 {
   name: "mens-shirts",
   label: "Men's Shirts",
-  src: "images/Men's products.jpg"
+  src: "images/mens-shirts.webp"
 },
 {
   name: "womens-dresses",
   label: "Women's Dresses",
-  src: "images/Women's products.jpg"
+  src: "images/womens-dresses.webp"
 },
 {
   name: "womens-jewellery",
-  label: "Jewellery",
+  label: "Jewelery",
   src: "images/jewelry.webp",
 },
 {
@@ -260,8 +351,51 @@ function category_data(category) {
 
 fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
+  renderCategories();
+});
+
+export function renderCategories() {
+  const container = document.querySelector(".categories__container");
+  let oldDropdownMenuOptions = container.querySelector(".categories__options");
+
+  if (oldDropdownMenuOptions) oldDropdownMenuOptions.remove();
 
   let categories__options = document.createElement("ul");
+  categories__options.className = "categories__options p-2 list-unstyled";
+
+  container.append(categories__options);
+
+  categories.forEach((ele) => {
+    let category = document.createElement("li");
+    category.className = "category p-2";
+    category.setAttribute("category", ele);
+    category.setAttribute("label", category_data(ele) ? category_data(ele).label : ele);
+
+    let category__logo = document.createElement("img");
+    category__logo.classList.add("mx-2");
+
+    categories__logos.forEach(el => {
+      if(el.name == ele) {
+        category__logo.src = el.src;
+        category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
+      }
+    });
+
+    let category__link = document.createElement("a");
+    category__link.classList.add("text-decoration-none");
+    category__link.href = `#products__section`;
+    category__link.textContent = i18next.t(ele);
+    
+    category.prepend(category__logo);
+    category.append(category__link);
+
+    category.addEventListener("click", () => {
+      categories__options.classList.remove("listed");
+      showCategoryProducts(ele);
+    });
+
+    categories__options.append(category);
+  });
 
   // when tabbed through all the options -> close the dropdown to prevent it from covering content
   categories__options.addEventListener("focusout", () => {
@@ -271,76 +405,30 @@ fetch_data("all_products.json").then(res => {
       }
     }, 0);
   });
+}
 
-  categories__options.className = "categories__options p-2 list-unstyled";
-  document.querySelector(".categories__container").append(categories__options);
+const categories__container = document.querySelector(".categories__container");
 
-  categories.forEach((ele) => {
-    let category = document.createElement("li");
-    let category__logo = document.createElement("img");
-    let current__category = category_data(ele);
+categories__btn.onclick = function() {
+  const dropdownMenu = categories__container.querySelector(".categories__options");
 
-    category.className = "category p-2";
-    category.setAttribute("category", ele);
-    category.setAttribute("label", current__category ? current__category.label : ele);
-    category__logo.classList.add("mx-2")
+  if (!dropdownMenu) return;
+  dropdownMenu.classList.toggle("listed");
+}
 
-    if(current__category) {
-      category__logo.src = current__category.src;
-      category__logo.alt = current__category.label + " category";
+let categories__items = document.querySelectorAll(".category");
+
+categories__items.forEach(ele => {
+  ele.onclick = function(e) {
+      categories__options.classList.remove("listed");
+      if(typeof showCategoryProducts === "function") {
+        showCategoryProducts(ele.getAttribute("category"));
+      }
     }
-
-    category.prepend(category__logo);
-    category.append(category__link(ele));
-
-    categories__options.append(category);
-  });
-
-
-  function set__categories__logos(category, data) {
-    data.forEach(el => {
-        if(el.name == category) {
-            let category__logo = document.createElement("img");
-            category__logo.src = el.src;
-
-            return category__logo;
-        }
-    })
-  }
-
-
-  function category__link(txt) {
-    let category__link = document.createElement("a");
-    category__link.classList.add("text-decoration-none");
-    category__link.href = `#products__section`;
-    category__link.text = category_data(txt) ? category_data(txt).label : txt;
-
-    return category__link;
-  }
-
-  categories__btn.onclick = function() {
-    if(!categories__options.classList.contains("listed")) {
-        categories__options.classList.add("listed");
-    } else {
-        categories__options.classList.remove("listed");
-    }
-  }
-
-  let categories__items = document.querySelectorAll(".category");
-
-  categories__items.forEach(ele => {
-    ele.onclick = function(e) {
-        categories__options.classList.remove("listed");
-        if(typeof display_products_by_category === "function") {
-          display_products_by_category(ele.getAttribute("category"), ele.getAttribute("label"));
-        }
-    }
-  });
-
-}); 
+});
 
 // product preview
-function display_product_preview() {
+export function display_product_preview() {
   let products = document.querySelectorAll(".product");
 
   products.forEach(ele => {
@@ -375,14 +463,13 @@ cart__ico.onclick = function() {
   }
 }
 
-
 // ==== Global function ====
 
-function fetch_data(url) {
+export function fetch_data(url) {
   const request_url = url === "all_products.json" ? PRODUCTS_API_URL : url;
 
-  if (_fetch_cache.has(request_url)) {
-    return _fetch_cache.get(request_url);
+  if (fetch_cache.has(request_url)) {
+    return fetch_cache.get(request_url);
   }
 
   const req = fetch(request_url)
@@ -395,20 +482,20 @@ function fetch_data(url) {
       return data;
     });
 
-  _fetch_cache.set(request_url, req);
+  fetch_cache.set(request_url, req);
   return req;
 }
 
 function set_products_obj(element, index) {
-all_products.add(element);
-element.id = index;
+  all_products.add(element);
+  element.id = index;
 
-if(category_data(element.category)) {
-  categories.add(element.category);
-}
+  if(category_data(element.category)) {
+    categories.add(element.category);
+  }
 }
 
-function change_currency() {
+export function change_currency() {
   let currencies__items = document.querySelectorAll(".currency__options li");
   
   currencies__items.forEach(ele => {
@@ -422,7 +509,6 @@ function change_currency() {
           });
       });
   });
-
 }
 
 function render_preview(element) {
@@ -435,7 +521,7 @@ function render_preview(element) {
         product__obj = [...all_products][product__id];
 
     product__preview.innerHTML = `
-    <button class="product__details__close p2" type="button" aria-label="Close product preview">
+    <button class="product__details__close p2" type="button" data-i18n-aria="${i18next.t('closePreviewLabel')}">
       <i class="fa-solid fa-xmark p-2"></i>
     </button>
 
@@ -445,12 +531,12 @@ function render_preview(element) {
         <div class="product__images__pagination mt-3">
             <div class="images__pagination__container px-2"></div>
               <button class="images__pagination__control previous d-flex justify-content-center align-items-center" 
-                      type="button" aria-label="Previous image">
+                      type="button" data-i18n-aria="${i18next.t('previousImageLabel')}">
                 <i class="fa-solid fa-angle-left"></i>
               </button>
 
             <button class="images__pagination__control next d-flex justify-content-center align-items-center" 
-                    type="button" aria-label="Next image">
+                    type="button" data-i18n-aria="${i18next.t('nextImageLabel')}">
               <i class="fa-solid fa-angle-right"></i>
             </button>
         </div>
@@ -471,7 +557,7 @@ function render_preview(element) {
             </div>
 
             <p class="availability mb-4">
-                Availability : <span>${escape_html(product_stock())}</span>
+                ${i18next.t("availability")} : <span>${escape_html(product_stock())}</span>
             </p>
 
         </div>
@@ -479,7 +565,7 @@ function render_preview(element) {
         <div class="product__sale mt-5">
         <button class="add__to__cart py-2 px-3" product-id="${product__obj.id}">
             <i class="fa-solid fa-cart-shopping mx-2  text-decoration-none"></i>
-            Add To Cart
+            ${i18next.t("addToCart")}
         </button>
 
       </div>
@@ -492,7 +578,7 @@ function render_preview(element) {
       let main__image = document.createElement("img");
 
       main__image.className = 'main__image';
-      main__image.alt = "product-image";
+      main__image.alt = i18next.t("productImageLabel");
       main__image.src = img_src(product__obj);
       main__image__container.append(main__image);
       // image zoom
@@ -540,7 +626,6 @@ function render_preview(element) {
       function closePreview() {
         document.body.classList.remove("overlay");
         document.removeEventListener("keydown", handlePreviewKeys);
-        product__preview._removeTrap?.();
         element?.focus();
       }
 
@@ -619,19 +704,18 @@ function render_preview(element) {
 
             return old__price.toFixed(2)
 
-        } else if(product__obj.old_price){
+        } else if (product__obj.old_price) {
           return product__obj.old_price
-          
-        } else{
+        } else {
           return "";
         }
     }
     
     function product_stock() {
-        if(product__obj.stock) {
+        if (product__obj.stock) {
             return product__obj.stock;
-        } else{
-            return "Many In Stock"
+        } else {
+            return i18next.t('manyInStock', 'Many In Stock')
         }
     }
 
@@ -642,11 +726,11 @@ function render_preview(element) {
               btn.type = "button";
               btn.className = "pagination__image";
               btn.setAttribute("image-id", i);
-              btn.setAttribute("aria-label", `Select image ${i + 1}`);
+              btn.setAttribute("data-i18n-aria", `${i18next.t('selectImageLabel')} ${i + 1}`);
 
               let img = document.createElement("img");
               img.src = el;
-              img.alt = "";
+              img.alt = i18next.t("productImageLabel");
 
               btn.append(img);
               images__pagination__container.append(btn);
@@ -656,7 +740,7 @@ function render_preview(element) {
           pagination__img.className = "p-2 pagination__image";
           pagination__img.setAttribute("image-id", 0);
           pagination__img.src = product__obj.images;
-          pagination__img.alt = "image_pagination";
+          pagination__img.alt = i18next.t("paginationImageLabel");
           images__pagination__container.append(pagination__img);
         }
     }
@@ -685,7 +769,6 @@ function render_preview(element) {
         }
       });
     }
-
   });
 
   // keep focus inside the preview container
@@ -718,7 +801,7 @@ function render_preview(element) {
   }
 }
 
-function display_loading_spinner(container) {
+export function display_loading_spinner(container) {
   container.innerHTML = "";
   container.classList.add("loading");
   container.innerHTML = `<section class="products__loader justify-content-center align-items-center">
@@ -741,7 +824,7 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   toast.className = "cart__feedback__toast";
   toast.setAttribute("role", "status");
   toast.setAttribute("aria-live", "polite");
-  toast.textContent = already__in__cart ? "Already in cart" : "Added to cart";
+  toast.textContent = already__in__cart ? i18next.t("alreadyInCart") : i18next.t("addedToCart");
   document.body.appendChild(toast);
 
   requestAnimationFrame(() => {
@@ -756,10 +839,13 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   }
 
   const originalHTML = buttonEl.innerHTML;
-  buttonEl.disabled = true;
+  buttonEl.setAttribute("aria-disabled", "true");
+  buttonEl.classList.add("add__to__cart--disabled");
   buttonEl.classList.add("add__to__cart--added");
   buttonEl.innerHTML =
-    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? "Already Added" : "Added!"}`;
+    `<i class="fa-solid fa-check mx-2" aria-hidden="true"></i>${already__in__cart ? i18next.t("alreadyAdded") : i18next.t("added")}`;
+
+  buttonEl.focus();
 
   window.setTimeout(() => {
     toast.classList.remove("cart__feedback__toast--visible");
@@ -767,13 +853,14 @@ function show_add_to_cart_feedback(buttonEl, already__in__cart) {
   }, 2400);
 
   window.setTimeout(() => {
-    buttonEl.disabled = false;
+    buttonEl.removeAttribute("aria-disabled");
+    buttonEl.classList.remove("add__to__cart--disabled");
     buttonEl.classList.remove("add__to__cart--added");
     buttonEl.innerHTML = originalHTML;
   }, 1800);
 }
 
-function display_cart_preview() {
+export function display_cart_preview() {
   let cart__items__preview = document.querySelector(".cart__items__preview"),
       items__id = JSON.parse(localStorage.getItem("cart-items")),
       currency = JSON.parse(localStorage.getItem("currency"));
@@ -796,7 +883,9 @@ function display_cart_preview() {
     <div class="cart__loader justify-content-center align-items-center">
         <div class="spinner-border text-primary spinner-border-sm"
         role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">
+          ${i18next.t("loading")}
+        </span>
         </div>
     </div>`;
 
@@ -808,16 +897,16 @@ function display_cart_preview() {
 
     <div class="cart__summary position-relative pt-2">
       <div class="cart__summary__total pb-3">
-        Cart Total : <span class="mx-2"></span>
+        ${i18next.t("cartTotal")} <span class="mx-2"></span>
       </div>
       <button class="view__cart__btn py-2 px-3">
         <i href="#" class="fa-solid fa-cart-shopping mx-2 text-decoration-none"></i>
-        Order Now
+        ${i18next.t("orderNow")}
       </button>
     </div>`;
 
     let cart__items = document.querySelector(".cart__items");
-  // render items 
+    // render items 
     items__id.forEach(ele => {
       let item = [...all_products][+ele];
       let product__item = document.createElement("div");
@@ -826,7 +915,7 @@ function display_cart_preview() {
       product__item.setAttribute("product-id", ele);
 
       product__item.innerHTML = `
-        <button class="delete__btn position-absolute" type="button" aria-label="Delete item from cart">
+        <button class="delete__btn position-absolute" type="button" data-i18n-aria="${i18next.t('deleteItemLabel')}">
           <i class="fa-solid fa-xmark"></i>
         </button>
 
@@ -841,10 +930,18 @@ function display_cart_preview() {
             <div class="cart__item__price">${(currency.rate * item.price).toFixed(2)} ${escape_html(currency.name)}</div>
 
             <div class="product__count d-flex justify-content-between" max-quantity="10">
-              <div class="increase__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-up"></i></div>
-              <span product-price="${(currency.rate * item.price).toFixed(2)}" product-id="${item.id}">1</span>
-              <div class="decrease__btn d-flex justify-content-center align-items-center py-1"><i class="fa-solid fa-chevron-down"></i></div>
-            </div>
+
+              <button class="increase__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" data-i18n-aria="${i18next.t('increaseQuantityLabel')}">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+
+              <span product-price=${(currency.rate * item.price).toFixed(2)} product-id=${item.id}>1</span>
+
+              <button class="decrease__btn d-flex justify-content-center align-items-center py-1" 
+                      type="button" data-i18n-aria="${i18next.t('decreaseQuantityLabel')}">
+              <i class="fa-solid fa-chevron-down"></i></div>
+            </button>
           </div>
         </div>
       </div>`
@@ -852,11 +949,10 @@ function display_cart_preview() {
       cart__items.append(product__item);
     });
 
-
-// functions  
-  // delete item
+    // functions  
+    // delete item
     let del__btn = document.querySelectorAll(".cart__item .delete__btn");
-      cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
+    cart__items = new Set(JSON.parse(localStorage.getItem("cart-items")));
 
     del__btn.forEach(ele => {
       ele.onclick = function() {
@@ -885,7 +981,7 @@ function display_cart_preview() {
         const nextFocusable = cart__items__preview.querySelector("button");
 
         nextFocusable.focus();
-    }
+      }
     });
 
     // product quantity
@@ -931,7 +1027,6 @@ function display_cart_preview() {
       }, 0);
 
       cart__summary__total.textContent = total.toFixed(2) + ` ${currency.name}`;
-    
     }
 
     // open product preview
@@ -946,4 +1041,12 @@ function display_cart_preview() {
       }
     });
   });
+}
+
+function rerenderCart() {
+  const cart = document.querySelector(".cart__items__preview");
+
+  if (cart.classList.contains("listed__cart")) {
+      display_cart_preview();
+  }
 }
