@@ -21,8 +21,10 @@ let images__data = [
 ];
 
 for(let i = 0; i < images__data.length; i++) {
-    let bullet = document.createElement("div");
+    let bullet = document.createElement("button");
     bullet.className = "bullet";
+    bullet.type = "button";
+    bullet.setAttribute("aria-label", `Go to banner ${i + 1}`);
     bullet.setAttribute("img-id", i);
     banner__bullets.append(bullet);
 }
@@ -75,10 +77,39 @@ banner__previous.onclick = function() {
 }
 
 function banner_img_slider(index) {
+    bullets.forEach((bullet, bulletIndex) => {
+        bullet.classList.remove("active-bullet");
+        bullet.setAttribute("aria-pressed", bulletIndex === index ? "true" : "false");
+    });
+
     banner__text__h2.textContent = images__data[index].title;
     banner__images.style.cssText = `background: url(${images__data[index].src}) no-repeat; background-size: cover`;
     bullets[index].classList.add("active-bullet");
 }
+
+// Add a simple swipe gesture so mobile users can switch banners quickly.
+let touchStartX = 0;
+let touchEndX = 0;
+
+banner__images.addEventListener("touchstart", (event) => {
+    touchStartX = event.changedTouches[0].screenX;
+});
+
+banner__images.addEventListener("touchend", (event) => {
+    touchEndX = event.changedTouches[0].screenX;
+    const swipeDistance = touchEndX - touchStartX;
+    const swipeThreshold = 40;
+
+    if(Math.abs(swipeDistance) < swipeThreshold) {
+        return;
+    }
+
+    if(swipeDistance < 0) {
+        banner__next.click();
+    } else {
+        banner__previous.click();
+    }
+});
 
 // search results
 const search__container = document.querySelector(".search__container");
@@ -92,7 +123,12 @@ search__container__input.oninput = function() {
 
     // Don't build a RegExp from user input - it threw on "(" before
     // and is also a ReDoS risk. Plain substring match works fine here.
-    let search__word = this.value.toLowerCase();
+    let search__word = this.value.trim().toLowerCase();
+
+    if(search__word.length < 2) {
+        search__results.remove();
+        return;
+    }
     
     fetch_data("all_products.json").then(res => {
         let results = new Set();
@@ -107,7 +143,7 @@ search__container__input.oninput = function() {
         search__container.append(search__results);
         search__results.innerHTML = "";
 
-        if(results.size > 1) {
+        if(results.size >= 1) {
             results.forEach(ele => {
                 let result = document.createElement("li");
 
@@ -118,7 +154,7 @@ search__container__input.oninput = function() {
                 search__results.append(result);
             });
         } else{
-            search__results.remove();
+            search__results.innerHTML = `<li class="search__empty p-2">No matching products</li>`;
         }
 
         let results__items = document.querySelectorAll(".search__results li");
@@ -130,7 +166,7 @@ search__container__input.oninput = function() {
             }
         });
 
-        if(!this.value) {
+        if(!this.value.trim()) {
             search__results.remove();
         }
 

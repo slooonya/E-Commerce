@@ -25,7 +25,7 @@
       <div class="sk-cube sk-cube7"></div>
       <div class="sk-cube sk-cube8"></div>
       <div class="sk-cube sk-cube9"></div>
-    </div>
+    </div> 
 <!--scroll to top btn-->
     <a href="#nav__section" class="scroll__top__btn d-flex justify-content-center align-items-center text-decoration-none" aria-label="Scroll to top">
       <i class="fa-solid fa-chevron-up text-light" style="font-size: 12px" aria-hidden="true"></i>
@@ -100,12 +100,12 @@
         <div class="banner__bullets">
         </div>
 
-        <div class="banner__next banner__control">
-          <i class="fa-solid fa-chevron-right" style="font-size: 12px"></i>
-        </div>
-        <div class="banner__previous banner__control">
-          <i class="fa-solid fa-chevron-left" style="font-size: 12px"></i>
-        </div>
+        <button type="button" class="banner__next banner__control" aria-label="Next banner">
+          <i class="fa-solid fa-chevron-right" style="font-size: 12px" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="banner__previous banner__control" aria-label="Previous banner">
+          <i class="fa-solid fa-chevron-left" style="font-size: 12px" aria-hidden="true"></i>
+        </button>
       </section>
     <!--categories-->
       <section id="categories__section" class="categories__section my-5">
@@ -113,8 +113,12 @@
           <div>
             <h2 class="m-0 py-3 position-relative">Categories</h2><hr class="m-0">
             <div class="categories__control">
-              <i class="fa-solid fa-chevron-left categories__previous mx-2 p-2" style="font-size: 12px"></i>
-              <i class="fa-solid fa-chevron-right categories__next mx-2 p-2" style="font-size: 12px"></i> 
+              <button type="button" class="categories__arrow categories__previous mx-2 p-2" aria-label="Scroll categories left">
+                <i class="fa-solid fa-chevron-left" style="font-size: 12px" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="categories__arrow categories__next mx-2 p-2" aria-label="Scroll categories right">
+                <i class="fa-solid fa-chevron-right" style="font-size: 12px" aria-hidden="true"></i>
+              </button> 
             </div>
           </div>
 
