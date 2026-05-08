@@ -26,23 +26,42 @@
       <div class="sk-cube sk-cube8"></div>
       <div class="sk-cube sk-cube9"></div>
     </div>
-<!--scroll to top btn-->
-    <a href="#nav__section" class="scroll__top__btn d-flex justify-content-center align-items-center text-decoration-none" aria-label="Scroll to top">
+
+    <!--scroll to top btn-->
+    <a href="#nav__section" class="scroll__top__btn d-flex justify-content-center align-items-center text-decoration-none" 
+      data-i18n-aria="scrollTopLabel">
       <i class="fa-solid fa-chevron-up text-light" style="font-size: 12px" aria-hidden="true"></i>
     </a>
-<!--main content-->
+
+    <!--main content-->
     <main>
-    <!--Nav bar-->
+      <!--Nav bar-->
       <section id="nav__section" class="nav__section">
         <nav class="container-xxl p-2">
-          <div class="nav__phone">
+          <div class="nav__phone" data-i18n="navCashback">
             <i class="fa-solid fa-wallet mx-2"></i>
-            get upto 25% cashback on first order
           </div>
 
           <div class="nav__links">
-            <div class="text-center"><i class="fa-solid fa-truck mx-1"></i> Track Order</div>
-            <div class="text-center"><i class="fa-solid fa-envelope mx-1"></i> admin@gmail.com</div>
+            <div class="text-center" data-i18n="navTrackOrder">
+              <i class="fa-solid fa-truck mx-1"></i>
+            </div>
+
+            <div class="text-center">
+              <i class="fa-solid fa-envelope mx-1"></i>
+              admin@gmail.com
+            </div>
+
+            <div class="language__container dropdown__container" tabindex="0" aria-expanded="false" role="button">
+              <span class="language__name">English</span>
+              <i class="fa-solid fa-chevron-down mx-1"></i>
+
+              <ul class="language__options dropdown__options">
+                <li class="language__item" data-lang="en" tabindex="0">English</li>
+                <li class="language__item" data-lang="ru" tabindex="0">Русский</li>
+              </ul>
+            </div>
+
             <div class="currency__container text-center d-flex justify-content-center align-items-md-center"
               tabindex="0" role="button" aria-expanded="false" style="cursor: pointer" >
               <img src="https://flagcdn.com/w40/us.png" class="mx-2 currency__logo" height="16" width="25" alt="USD"> 
@@ -50,78 +69,91 @@
               <i class="fa-solid fa-chevron-down mx-1" style="font-size: 12px"></i>
             </div>
           </div>
-
         </nav>
       </section>
-    <!--Header-->
+
+      <!--Header-->
       <section id="header__section" class="header__section">
         <header class="container-xxl py-4 position-relative">
           <img src="images/logo.avif" alt="logo">
 
           <div class="search__container position-relative">
-            <input type="text" placeholder="Search our product" class="px-3 py-2">
-            <button class="search__btn"><i class="fa-solid fa-magnifying-glass mx-1"></i>Search</button>
+            <input type="text" data-i18n-placeholder="searchPlaceholder" class="px-3 py-2">
+
+            <button class="search__btn">
+              <i class="fa-solid fa-magnifying-glass mx-1"></i>
+              <span data-i18n="searchButton"></span>
+            </button>
           </div>
 
           <div class="header__icons">
-            <button class="profile__btn" type="button" aria-label="Profile">
+            <button class="profile__btn" type="button" data-i18n-aria="profileLabel">
               <i class="fa-solid fa-user"></i>
             </button>
 
             <div class="cart">
-              <a href="#" class="cart__ico p-2 text-decoration-none" aria-label="Shopping cart"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i></a>
+              <a href="#" class="cart__ico p-2 text-decoration-none" data-i18n-aria="cartLabel">
+                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+              </a>
+
               <span class="cart__items__num">0</span>
             </div>
           </div>
           
           <div class="cart__items__preview p-3"></div>
-
         </header>
       </section>
-    <!--menu bar-->
+
+      <!--menu bar-->
       <section class="menubar__section">
         <div class="container-xl py-2 d-flex justify-content-between align-items-md-center">
       
           <div class="categories__container">
-            <button class="categories__btn px-1"><i class="fa-solid fa-bars mx-2"></i> Shop Categories</button>
+            <button class="categories__btn px-1">
+              <i class="fa-solid fa-bars mx-2"></i>
+              <span data-i18n="shopCategories"></span>
+            </button>
           </div>
 
           <div class="menubar__links">
-            <a href="#" class="text-decoration-none p-2">HOME</a>
-            <a href="#categories__section" class="text-decoration-none p-2">Categories</a>
-            <a href="#products__section" class="text-decoration-none p-2">Products</a>
-            <a href="#footer" class="text-decoration-none p-2">About</a>
+            <a href="#nav__section" class="text-decoration-none p-2" data-i18n="navHome"></a>
+            <a href="#categories__section" class="text-decoration-none p-2" data-i18n="navCategories"></a>
+            <a href="#products__section" class="text-decoration-none p-2" data-i18n="navProducts"></a>
+            <a href="#footer" class="text-decoration-none p-2" data-i18n="navAbout"></a>
           </div>
         </div>
       </section>
-    <!--Banner images-->
+
+      <!--Banner images-->
       <section class="banner__images d-flex justify-content-center align-items-center">
         <div class="banner__text text-light d-flex flex-column align-items-center ">
-          <h2 class="display-2">Smart Watches</h2>
-          <p>Amazing and Exclusive offers</p>
+          <h2 class="display-2" data-i18n="bannerTitle"></h2>
+          <p data-i18n="bannerSubtitle"></p>
         </div>
-          <button class="banner__previous banner__control" type="button" aria-label="Previous slide">
-            <i class="fa-solid fa-chevron-left" style="font-size: 12px"></i>
+
+        <button class="banner__previous banner__control" type="button" data-i18n-aria="bannerPreviousLabel">
+          <i class="fa-solid fa-chevron-left" style="font-size: 12px"></i>
         </button>
 
-        <button class="banner__next banner__control" type="button" aria-label="Next slide">
+        <button class="banner__next banner__control" type="button" data-i18n-aria="bannerNextLabel">
           <i class="fa-solid fa-chevron-right" style="font-size: 12px"></i>
         </button>
         
         <div class="banner__bullets"></div>
       </section>
-    <!--categories-->
+
+      <!--categories-->
       <section id="categories__section" class="categories__section my-5">
         <div class="container-xxl">
           <div>
-            <h2 class="m-0 py-3 position-relative">Categories</h2><hr class="m-0">
+            <h2 class="m-0 py-3 position-relative" data-i18n="categoriesTitle"></h2><hr class="m-0">
             <div class="categories__control">
 
-              <button class="categories__previous mx-2 p-2" type="button" aria-label="Previous categories">
+              <button class="categories__previous mx-2 p-2" type="button" data-i18n-aria="categoriesPreviousLabel">
                 <i class="fa-solid fa-chevron-left categories__previous mx-2 p-2" style="font-size: 12px"></i>
               </button>
 
-              <button class="categories__next mx-2 p-2" type="button" aria-label="Next categories">
+              <button class="categories__next mx-2 p-2" type="button" data-i18n-aria="categoriesNextLabel">
                 <i class="fa-solid fa-chevron-right categories__next mx-2 p-2" style="font-size: 12px"></i> 
               </button>
             </div>
@@ -130,51 +162,68 @@
           <div class="categories__cards__container mt-5"></div>
         </div>
       </section>
-    <!--products-->
+
+      <!--products-->
       <section id="products__section" class="products__section">
         <div class="container-xxl position-relative pb-5">
-          <h2 class="m-0 py-3 position-relative">Products</h2><hr class="m-0">
+          <h2 class="m-0 py-3 position-relative" data-i18n="productsTitle"></h2><hr class="m-0">
           <div class="products__container my-5"></div>
         </div>
       </section>
-    <!--Product preview-->
+
+      <!--Product preview-->
       <div class="product__preview px-4 pt-5 pb-4"></div>
-    <!--footer-->
+
+      <!--footer-->
       <footer id="footer" class="p-5 mt-5">
         <div class="container-xxl d-flex justify-content-between align-items-center">
           <div class="footer__bio">
             <img src="images/logo.avif" alt="logo">
-            <p class="mt-1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Distinctio excepturi iste temporibus cum perspiciatis placeat cupiditate </p>
+            <p class="mt-1" data-i18n="footerDescription"></p>
           </div>
 
           <div class="footer__links">
             <ul class="list-unstyled">
-              <li class="mt-3"><a href="#" class="text-decoration-none text-light">Home</a></li>
-              <li class="mt-3"><a href="#products__section" class="text-decoration-none text-light">Products</a></li>
-              <li class="mt-3"><a href="#categories__section" class="text-decoration-none text-light">Categories</a></li>
-              <li class="mt-3"><a href="#header__section" class="text-decoration-none text-light">Search</a></li>
               <li class="mt-3">
-                <a href="https://github.com/omar-kamal-elkhabbaty" class="text-decoration-none text-light">About</a>
+                <a href="#nav__section" class="text-decoration-none text-light" data-i18n="footerHome"></a>
               </li>
-              <li class="mt-3"><a href="mailto:omar.muhammed.kamal@gmail.com" class="text-decoration-none text-light">Contact us</a></li>
+
+              <li class="mt-3">
+                <a href="#products__section" class="text-decoration-none text-light" data-i18n="footerProducts"></a>
+              </li>
+
+              <li class="mt-3">
+                <a href="#categories__section" class="text-decoration-none text-light" data-i18n="footerCategories"></a>
+              </li>
+
+              <li class="mt-3">
+                <a href="#header__section" class="text-decoration-none text-light" data-i18n="footerSearch"></a>
+              </li>
+
+              <li class="mt-3">
+                <a href="https://github.com/omar-kamal-elkhabbaty" class="text-decoration-none text-light" data-i18n="footerAbout"></a>
+              </li>
+
+              <li class="mt-3">
+                <a href="mailto:omar.muhammed.kamal@gmail.com" class="text-decoration-none text-light" data-i18n="footerContact"></a>
+              </li>
             </ul>
           </div>
 
           <div class="footer__accounts">
-            <h3 class="text-light">Follow us</h3>
+            <h3 class="text-light" data-i18n="footerFollowUs"></h3>
             <div class="mt-5">
-              <a href="https://www.linkedin.com/in/omar-kamal-a76303250/" class="text-decoration-none text-light" aria-label="LinkedIn profile">
+              <a href="https://www.linkedin.com/in/omar-kamal-a76303250/" class="text-decoration-none text-light" data-i18n-aria="footerLinkedinLabel">
                 <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
               </a>
 
-              <a href="https://github.com/omar-kamal-elkhabbaty" class="text-decoration-none text-light" aria-label="GitHub profile">
+              <a href="https://github.com/omar-kamal-elkhabbaty" class="text-decoration-none text-light" data-i18n-aria="footerGithubLabel">
                 <i class="fa-brands fa-github" aria-hidden="true"></i>
               </a>
 
-              <a href="mailto:omar.muhammed.kamal@gmail.com" class="text-decoration-none text-light" aria-label="Email us">
+              <a href="mailto:omar.muhammed.kamal@gmail.com" class="text-decoration-none text-light" data-i18n-aria="footerEmailLabel">
                 <i class="fa-solid fa-envelope" aria-hidden="true"></i>
               </a>
-
             </div>
           </div>
         </div>
@@ -184,8 +233,9 @@
 
 		<script src="javascript/config.js"></script>
 		<script src="javascript/utils/escape_html.js"></script>
-		<script src="javascript/main.js"></script>
+    <script src="https://unpkg.com/i18next/i18next.min.js"></script>
+		<script type="module" src="javascript/main.js"></script>
     <script src="javascript/utils/img_src.js"></script>
-		<script src="javascript/index.js"></script>
+		<script type="module" src="javascript/index.js"></script>
 	</body>
 </html>
