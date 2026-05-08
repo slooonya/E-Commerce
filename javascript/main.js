@@ -371,9 +371,36 @@ cart__ico.onclick = function() {
   if(localStorage__data && localStorage__data.length >= 1) {
     display_cart_preview();
   } else{
-    cart__items__preview.classList.remove("listed__cart");
+    display_empty_cart_state();
   }
 }
+
+// Keep this behavior isolated to avoid interfering with teammates' cart logic:
+// when cart preview is open, clicking outside closes it.
+document.addEventListener("click", (event) => {
+  const cart__items__preview = document.querySelector(".cart__items__preview");
+
+  if(!cart__items__preview || !cart__items__preview.classList.contains("listed__cart")) {
+    return;
+  }
+
+  const clicked__inside__preview = cart__items__preview.contains(event.target);
+  const clicked__cart__trigger = event.target.closest(".cart");
+
+  if(!clicked__inside__preview && !clicked__cart__trigger) {
+    cart__items__preview.classList.remove("listed__cart");
+  }
+});
+
+// Allow quick keyboard dismissal without changing existing cart flow.
+document.addEventListener("keydown", (event) => {
+  if(event.key !== "Escape") {
+    return;
+  }
+
+  const cart__items__preview = document.querySelector(".cart__items__preview");
+  cart__items__preview?.classList.remove("listed__cart");
+});
 
 
 // ==== Global function ====
@@ -945,5 +972,30 @@ function display_cart_preview() {
         render_preview(e.currentTarget);
       }
     });
+  });
+}
+
+function display_empty_cart_state() {
+  const cart__items__preview = document.querySelector(".cart__items__preview");
+
+  if(!cart__items__preview) {
+    return;
+  }
+
+  cart__items__preview.classList.add("listed__cart");
+  cart__items__preview.classList.remove("loading");
+  cart__items__preview.innerHTML = `
+    <div class="empty__cart__state">
+      <i class="fa-solid fa-cart-shopping empty__cart__icon" aria-hidden="true"></i>
+      <h3>Your cart is empty</h3>
+      <p>Add products to your cart and come back here.</p>
+      <button type="button" class="empty__cart__cta">Browse products</button>
+    </div>
+  `;
+
+  const empty__cta = cart__items__preview.querySelector(".empty__cart__cta");
+  empty__cta?.addEventListener("click", () => {
+    cart__items__preview.classList.remove("listed__cart");
+    location.href = "#products__section";
   });
 }
