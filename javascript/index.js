@@ -293,27 +293,18 @@ window.addEventListener("load", () => {
 
 });
 
-// global function
+// global function. Price / rate / discount strings now come from the
+// helpers in javascript/utils/ (loaded as plain scripts in index.html),
+// so we just call them as globals here.
 function render_products(ele) {
-
-    function product_price() {
-        let current__currency = JSON.parse(localStorage.getItem("currency"));
-        return `${(ele.price * current__currency.rate).toFixed(2)} ${current__currency.name}`;
-    }
-
-    function product_rate() {
-        if(ele.rating) {
-            return ele.rating
-        } else{
-            return 4;
-        }
-    }
+    const currency = JSON.parse(localStorage.getItem("currency"));
+    const price_text = format_price(ele.price, currency);
 
     let div = document.createElement("button");
     div.type = "button";
     div.className = "product position-relative mx-3 mb-4 ";
 
-    div.setAttribute("aria-label", `${ele.title}, ${product_price()}`);
+    div.setAttribute("aria-label", `${ele.title}, ${price_text}`);
     div.setAttribute("product-id", ele.id);
     div.innerHTML = `
         <div class="product__img__container">
@@ -323,27 +314,20 @@ function render_products(ele) {
         <div class="product__info p-2 ">
             <span class="category__name">${(i18next.t(escape_html(ele.category)))}</span>
             <h3>${escape_html(ele.title)}</h3>
-            <span class="product__price" price-USD="${ele.price}">${product_price()}</span>
+            <span class="product__price" price-USD="${ele.price}">${price_text}</span>
         </div>
 
-        <div class="product__discount px-1">${product_discount()}</div>
+        <div class="product__discount px-1">${product_discount(ele)}</div>
 
-        <div class="product__rating" rate="${product_rate()}">
+        <div class="product__rating" rate="${product_rate(ele)}">
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
             <i class="fa-regular fa-star"></i>
     </div>`;
-        
-    products__container.append(div);
 
-    function product_discount() {
-        if(ele.discountPercentage) {
-            return ele.discountPercentage + " %"
-        } else 
-        return ""
-    }
+    products__container.append(div);
 
     let product__discount = document.querySelector(".product__discount");
     if(!product__discount.textContent) {
