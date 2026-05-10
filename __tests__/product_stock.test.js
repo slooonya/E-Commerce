@@ -18,4 +18,17 @@ describe('product_stock', () => {
         expect(product_stock(null)).toBe('Many In Stock');
         expect(product_stock(undefined)).toBe('Many In Stock');
     });
+
+    test('uses the fallback string when stock is missing', () => {
+        expect(product_stock({}, 'Много в наличии')).toBe('Много в наличии');
+        expect(product_stock(null, 'In Stock')).toBe('In Stock');
+    });
+
+    test('actual stock wins over the fallback', () => {
+        expect(product_stock({ stock: 5 }, 'never used')).toBe(5);
+    });
+
+    test('empty fallback -> default English string', () => {
+        expect(product_stock({}, '')).toBe('Many In Stock');
+    });
 });

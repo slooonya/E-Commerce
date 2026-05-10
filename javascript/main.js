@@ -341,13 +341,8 @@ export const categories__logos = [
 }
 ];
 
-function category_matches(product__category, selected__category) {
-  return product__category == selected__category;
-}
-
-function category_data(category) {
-  return categories__logos.find(ele => ele.name == category) || null;
-}
+// category_matches and category_data are now in javascript/utils/
+// (loaded as globals from index.html).
 
 fetch_data("all_products.json").then(res => {
   res.forEach((ele, i) => {set_products_obj(ele, i)});
@@ -369,13 +364,14 @@ export function renderCategories() {
     let category = document.createElement("li");
     category.className = "category p-2";
     category.setAttribute("category", ele);
-    category.setAttribute("label", category_data(ele) ? category_data(ele).label : ele);
+    let data = category_data(ele, categories__logos);
+    category.setAttribute("label", data ? data.label : ele);
 
     let category__logo = document.createElement("img");
     category__logo.classList.add("mx-2");
 
     categories__logos.forEach(el => {
-      if(el.name == ele) {
+      if(category_matches(el.name, ele)) {
         category__logo.src = el.src;
         category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
       }
@@ -505,7 +501,7 @@ function set_products_obj(element, index) {
   all_products.add(element);
   element.id = index;
 
-  if(category_data(element.category)) {
+  if(category_data(element.category, categories__logos)) {
     categories.add(element.category);
   }
 }
@@ -572,7 +568,7 @@ function render_preview(element) {
             </div>
 
             <p class="availability mb-4">
-                ${i18next.t("availability")} : <span>${escape_html(product_stock())}</span>
+                ${i18next.t("availability")} : <span>${escape_html(product_stock(product__obj, i18next.t('manyInStock', 'Many In Stock')))}</span>
             </p>
 
         </div>
@@ -689,9 +685,11 @@ function render_preview(element) {
 
       }
 
-      // old price
+      // old price - using the shared helper so we don't have the
+      // same back-calculation in two places.
       let the__old__price = document.querySelector(".the__old__price");
-      the__old__price.textContent = product_price_before_discount();
+      let currency__value = +document.querySelector(".currency__value").textContent;
+      the__old__price.textContent = old_price(product__obj, currency__value);
 
       // add to cart
       let add__to__cart = document.querySelector(".add__to__cart");
@@ -711,28 +709,10 @@ function render_preview(element) {
       }
 
 
-    // functions 
-    function product_price_before_discount(){
-        if(product__obj.discountPercentage) {
-            let currency__value = +document.querySelector(".currency__value").textContent;
-            let old__price = (currency__value / ((100 - product__obj.discountPercentage))) * 100;
-
-            return old__price.toFixed(2)
-
-        } else if (product__obj.old_price) {
-          return product__obj.old_price
-        } else {
-          return "";
-        }
-    }
-    
-    function product_stock() {
-        if (product__obj.stock) {
-            return product__obj.stock;
-        } else {
-            return i18next.t('manyInStock', 'Many In Stock')
-        }
-    }
+    // functions
+    // product_price_before_discount and product_stock used to be nested
+    // here. They moved to javascript/utils/old_price.js and
+    // javascript/utils/product_stock.js so we can test them.
 
     function set_images_pagination() {
         if(Array.isArray(product__obj.images)) {
