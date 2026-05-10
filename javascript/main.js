@@ -371,7 +371,7 @@ export function renderCategories() {
     category__logo.classList.add("mx-2");
 
     categories__logos.forEach(el => {
-      if(el.name == ele) {
+      if(category_matches(el.name, ele)) {
         category__logo.src = el.src;
         category__logo.alt = `${i18next.t(el.name)} ${i18next.t("category")}`;
       }

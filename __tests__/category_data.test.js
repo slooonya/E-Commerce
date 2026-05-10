@@ -40,4 +40,10 @@ describe('category_data', () => {
         const messy = [null, undefined, { name: 'x', src: 'x.png' }];
         expect(category_data('x', messy)).toEqual({ name: 'x', src: 'x.png' });
     });
+
+    test('1 and "1" should match (we use ==)', () => {
+        const numeric = [{ name: 1, label: 'One' }, { name: '2', label: 'Two' }];
+        expect(category_data('1', numeric)).toEqual({ name: 1, label: 'One' });
+        expect(category_data(2, numeric)).toEqual({ name: '2', label: 'Two' });
+    });
 });
