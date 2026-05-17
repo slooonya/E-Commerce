@@ -1,5 +1,6 @@
 import i18next, { updateContent } from "./i18n.js";
 import { showCategoryProducts } from "./index.js";
+import { initCookieBanner } from "./cookie_banner.js";
 
 
 // In-memory cache for fetch_data to avoid redundant network requests.
@@ -21,6 +22,7 @@ window.addEventListener("load", () => {
 
   document.querySelector("main").style.display = "block";
   document.querySelector(".loader").style.display = "none";
+  initCookieBanner();
 });
 
 // scroll to top
