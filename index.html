@@ -209,7 +209,7 @@
               </li>
 
               <li class="mt-3">
-                <a href="privacy.html" class="text-decoration-none text-light">Privacy Policy</a>
+                <a href="privacy.html" class="text-decoration-none text-light" data-i18n="privacyTitle">Privacy Policy</a>
               </li>
             </ul>
           </div>
@@ -234,33 +234,34 @@
       </footer>
     </main>
 
-    <!-- Cookie consent banner (English) -->
     <aside
-      id="cookie-banner"
-      class="cookie-banner"
-      role="dialog"
-      aria-labelledby="cookie-banner-title"
-      aria-describedby="cookie-banner-desc"
-      aria-hidden="true"
-      hidden
-    >
-      <div class="cookie-banner__inner container-xxl">
-        <div class="cookie-banner__content">
-          <h2 id="cookie-banner-title" class="cookie-banner__title">We use cookies</h2>
-          <p id="cookie-banner-desc" class="cookie-banner__text">
-            We use cookies to improve your browsing experience, remember your preferences,
-            and understand how you use our store. You can accept all cookies or decline
-            non-essential ones. See our
-            <a href="privacy.html" class="cookie-banner__link">privacy information</a>
-            for details.
-          </p>
-        </div>
-        <div class="cookie-banner__actions">
-          <button type="button" class="cookie-banner__reject">Decline</button>
-          <button type="button" class="cookie-banner__accept">Accept all</button>
-        </div>
-      </div>
-    </aside>
+			id="cookie-banner"
+			class="cookie-banner"
+			role="dialog"
+			aria-labelledby="cookie-banner-title"
+			aria-describedby="cookie-banner-desc"
+			aria-hidden="true"
+			hidden
+		>
+			<div class="cookie-banner__inner container-xxl">
+				<div class="cookie-banner__content">
+					<h2 id="cookie-banner-title" class="cookie-banner__title" data-i18n="cookieBannerTitle">We use cookies</h2>
+					<p id="cookie-banner-desc" class="cookie-banner__text">
+						<span data-i18n="cookieBannerTextPart1">
+              We use cookies to improve your browsing experience, remember your preferences,
+              and understand how you use our store. You can accept all cookies or decline
+              non-essential ones. See our
+            </span>
+						<a href="privacy.html" class="cookie-banner__link" data-i18n="cookieBannerLink">privacy information</a>
+						<span data-i18n="cookieBannerTextPart2">for details.</span>
+					</p>
+				</div>
+				<div class="cookie-banner__actions">
+					<button type="button" class="cookie-banner__reject" data-i18n="decline">Decline</button>
+					<button type="button" class="cookie-banner__accept" data-i18n="acceptAll">Accept all</button>
+				</div>
+			</div>
+		</aside>
 
 		<script src="javascript/config.js"></script>
 		<script src="javascript/utils/escape_html.js"></script>
