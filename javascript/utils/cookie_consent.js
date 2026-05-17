@@ -1,17 +1,17 @@
 const STORAGE_KEY = "cookie-consent";
 
-export const CONSENT_ACCEPTED = "accepted";
-export const CONSENT_REJECTED = "rejected";
+const CONSENT_ACCEPTED = "accepted";
+const CONSENT_REJECTED = "rejected";
 
-export function getCookieConsent() {
+function getCookieConsent() {
   return localStorage.getItem(STORAGE_KEY);
 }
 
-export function setCookieConsent(value) {
+function setCookieConsent(value) {
   localStorage.setItem(STORAGE_KEY, value);
 }
 
-export function hasCookieConsent() {
+function hasCookieConsent() {
   return getCookieConsent() !== null;
 }
 

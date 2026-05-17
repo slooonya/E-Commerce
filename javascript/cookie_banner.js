@@ -1,10 +1,3 @@
-import {
-  CONSENT_ACCEPTED,
-  CONSENT_REJECTED,
-  hasCookieConsent,
-  setCookieConsent,
-} from "./utils/cookie_consent.js";
-
 export function initCookieBanner() {
   const banner = document.getElementById("cookie-banner");
 
@@ -18,12 +11,12 @@ export function initCookieBanner() {
   showBanner(banner);
 
   acceptBtn?.addEventListener("click", () => {
-    setCookieConsent(CONSENT_ACCEPTED);
+    setCookieConsent("accepted");
     hideBanner(banner);
   });
 
   rejectBtn?.addEventListener("click", () => {
-    setCookieConsent(CONSENT_REJECTED);
+    setCookieConsent("rejected");
     hideBanner(banner);
   });
 }
