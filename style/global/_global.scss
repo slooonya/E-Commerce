@@ -417,6 +417,88 @@ footer{
   }
 }
 
+// privacy policy page
+.privacy-header{
+  background-color: #fff;
+  border-bottom: 1px solid $border-color;
+}
+
+.privacy-header__logo img{
+  height: 48px;
+  width: auto;
+}
+
+.privacy-header__back{
+  color: $sec-color;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover{
+    color: $green-color;
+  }
+}
+
+.privacy-page{
+  padding: 48px 0 64px;
+  max-width: 860px;
+  margin: 0 auto;
+
+  h1{
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  h2{
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: $sec-color;
+  }
+
+  p,
+  li{
+    font-size: 15px;
+    line-height: 1.7;
+    color: $small-span;
+  }
+
+  ul{
+    padding-left: 1.25rem;
+    margin-bottom: 0;
+  }
+
+  li{
+    margin-bottom: 8px;
+  }
+
+  a{
+    color: $green-color;
+    font-weight: 500;
+
+    &:hover{
+      color: darken($green-color, 8%);
+    }
+  }
+
+  code{
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    font-size: 13px;
+  }
+}
+
+.privacy-page__updated{
+  margin-bottom: 28px;
+  font-size: 14px;
+  color: $small-span;
+}
+
+.privacy-footer{
+  background-color: $sec-color;
+}
+
 @media (max-width: 850px) {
   footer div.container-xxl{
     flex-direction: column;

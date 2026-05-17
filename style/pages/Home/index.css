@@ -2290,4 +2290,85 @@ header .header__icons .cart__items__num {
     justify-content: flex-end;
   }
 }
+
+.privacy-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e4e2e0;
+}
+
+.privacy-header__logo img {
+  height: 48px;
+  width: auto;
+}
+
+.privacy-header__back {
+  color: #474747;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.privacy-header__back:hover {
+  color: #83a900;
+}
+
+.privacy-page {
+  padding: 48px 0 64px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.privacy-page h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.privacy-page h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 32px 0 12px;
+  color: #474747;
+}
+
+.privacy-page p,
+.privacy-page li {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.privacy-page ul {
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+}
+
+.privacy-page li {
+  margin-bottom: 8px;
+}
+
+.privacy-page a {
+  color: #83a900;
+  font-weight: 500;
+}
+
+.privacy-page a:hover {
+  color: #6a8800;
+}
+
+.privacy-page code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 13px;
+}
+
+.privacy-page__updated {
+  margin-bottom: 28px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.privacy-footer {
+  background-color: #474747;
+}
 /*# sourceMappingURL=index.css.map */
