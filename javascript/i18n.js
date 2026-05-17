@@ -102,8 +102,63 @@ const enTranslation = {
   "footerLinkedinLabel": "LinkedIn profile",
   "footerGithubLabel": "GitHub profile",
   "footerEmailLabel": "Email us",
+  "footerPolicy": "Privacy Policy",
 
-  "scrollTopLabel": "Scroll to top"
+  "scrollTopLabel": "Scroll to top",
+
+  "privacyTitle": "Privacy Policy",
+  "privacyLastUpdated": "Last updated: May 17, 2026",
+  "privacyIntro": "This Privacy Policy explains how our e-commerce store collects, uses, and protects your information when you visit our website or make a purchase. By using this site, you agree to the practices described below.",
+
+  "privacyInfoHeader": "1. Information we collect",
+  "privacyInfoText": "We may collect the following types of information:",
+  "privacyInfoAccountStrong": "Account and contact details",
+  "privacyInfoAccountRest": " — such as your name, email address, and delivery address when you place an order or contact us.",
+  "privacyInfoOrderStrong": "Order information",
+  "privacyInfoOrderRest": " — products added to your cart, purchase history, and payment-related details processed by our payment partners.",
+  "privacyInfoTechnicalStrong": "Technical data",
+  "privacyInfoTechnicalRest": " — browser type, device information, IP address, and pages visited, collected through cookies and similar technologies.",
+  "privacyInfoPreferencesStrong": "Preferences",
+  "privacyInfoPreferencesRest": " — language, currency, and cookie consent choices stored in your browser.",
+
+  "privacyCookiesTitle": "2. Cookies",
+  "privacyCookiesEssential": "We use cookies and local storage to run the store and improve your experience. Essential cookies are required for core features such as shopping cart persistence and remembering your language or currency settings.",
+  "privacyCookiesNonessentialPart1": "Non-essential cookies may be used for analytics and personalization. When you first visit our site, a cookie banner lets you ",
+  "privacyCookiesNonessentialPart2": " cookies or ",
+  "privacyCookiesNonessentialPart3": "non-essential ones. Your choice is stored locally under the key cookie-consent with a value of accepted or rejected.",
+
+  "privacyUseTitle": "3. How we use your information",
+  "privacyUseText": "We use collected information to:",
+  "privacyUseOrders": "Process and fulfill orders",
+  "privacyUseSupport": "Provide customer support and respond to inquiries",
+  "privacyUseImprovement": "Improve website performance, security, and usability",
+  "privacyUsePreferences": "Remember your preferences across visits",
+  "privacyUseLegal": "Comply with legal obligations where applicable",
+
+  "privacySharingTitle": "4. Sharing with third parties",
+  "privacySharingText": "We do not sell your personal data. We may share limited information with trusted service providers who help us operate the store — for example, payment processors, delivery partners, or hosting providers — only to the extent necessary to provide their services.",
+
+  "privacySecurityTitle": "5. Data retention and security",
+  "privacySecurityText": "We retain personal data only for as long as needed to fulfill the purposes described in this policy or as required by law. We apply reasonable technical and organizational measures to protect your information, though no method of transmission over the Internet is completely secure.",
+
+  "privacyRightsTitle": "6. Your rights",
+  "privacyRightsText": "Depending on your location, you may have the right to:",
+  "privacyRightsPersonalData": "Access, correct, or delete your personal data",
+  "privacyRightsWithdraw": "Withdraw consent for non-essential cookies at any time by clearing site data in your browser",
+  "privacyRightsActivities": "Object to or restrict certain processing activities",
+  "privacyRightsComplaint": "Lodge a complaint with a data protection authority",
+
+  "privacyContactTitle": "7. Contact us",
+  "privacyContactText": "If you have questions about this Privacy Policy or how we handle your data, please contact us at",
+  "privacyCopyright": "2026 E-commerce. All rights reserved.",
+
+  "cookieBannerTitle": "We use cookies",
+  "cookieBannerTextPart1": "We use cookies to improve your browsing experience, remember your preferences, and understand how you use our store. You can accept all cookies or decline non-essential ones. See our",
+  "cookieBannerTextPart2": "for details.",
+  "cookieBannerLink": "privacy information",
+  "decline": "Decline",
+  "acceptAll": "Accept All",
+  "backToStore": "Back to store"
 };
 
 const ruTranslation = {
@@ -199,8 +254,64 @@ const ruTranslation = {
   "footerLinkedinLabel": "Профиль LinkedIn",
   "footerGithubLabel": "Профиль GitHub",
   "footerEmailLabel": "Напишите нам",
+  "footerPolicy": "Политика конфиденциальности",
 
-  "scrollTopLabel": "Прокрутить вверх"
+  "scrollTopLabel": "Прокрутить вверх",
+
+  "privacyTitle": "Политика конфиденциальности",
+  "privacyLastUpdated": "Последнее обновление: 17 мая 2026",
+  "privacyIntro": "Эта Политика конфиденциальности объясняет, как наш интернет-магазин собирает, использует и защищает вашу информацию, когда вы посещаете наш сайт или совершаете покупку. Используя этот сайт, вы соглашаетесь с описанными ниже практиками.",
+
+  "privacyInfoHeader": "1. Информация, которую мы собираем",
+  "privacyInfoText": "Мы можем собирать следующие типы информации:",
+  "privacyInfoAccountStrong": "Данные учетной записи и контактов",
+  "privacyInfoAccountRest": " — например, ваше имя, адрес электронной почты и адрес доставки при размещении заказа или обращении к нам.",
+  "privacyInfoOrderStrong": "Информация о заказах",
+  "privacyInfoOrderRest": " — товары, добавленные в корзину, история покупок и платежные данные, обработанные нашими партнёрами по оплате.",
+  "privacyInfoTechnicalStrong": "Технические данные",
+  "privacyInfoTechnicalRest": " — тип браузера, информация об устройстве, IP-адрес и посещённые страницы, собираемые с помощью cookies и аналогичных технологий.",
+  "privacyInfoPreferencesStrong": "Настройки",
+  "privacyInfoPreferencesRest": " — язык, валюта и выбор файлов cookie, сохранённые в вашем браузере.",
+
+  "privacyCookiesTitle": "2. Файлы cookie",
+  "privacyCookiesEssential": "Мы используем файлы cookie и локальное хранилище для работы магазина и улучшения вашего опыта. Основные файлы cookie необходимы для таких функций, как сохранение корзины и запоминание ваших настроек языка или валюты.",
+  "privacyCookiesNonessentialPart1": "Необязательные файлы cookie могут использоваться для аналитики и персонализации. При первом посещении нашего сайта баннер cookies позволяет вам ",
+  "privacyCookiesNonessentialPart2": " файлы cookie или ",
+  "privacyCookiesNonessentialPart3": "необязательные. Ваш выбор сохраняется локально под ключом cookie-consent со значением accepted или rejected.",
+  
+  "privacyUseTitle": "3. Как мы используем вашу информацию",
+  "privacyUseText": "Мы используем собранную информацию для:",
+  "privacyUseOrders": "Обработки и выполнения заказов",
+  "privacyUseSupport": "Предоставления поддержки клиентам и ответов на запросы",
+  "privacyUseImprovement": "Улучшения работы сайта, безопасности и удобства использования",
+  "privacyUsePreferences": "Запоминания ваших настроек между посещениями",
+  "privacyUseLegal": "Соблюдения правовых обязательств, где это применимо",
+
+  "privacySharingTitle": "4. Передача третьим лицам",
+  "privacySharingText": "Мы не продаём ваши персональные данные. Мы можем передавать ограниченную информацию надёжным поставщикам услуг, которые помогают нам управлять магазином — например, процессорам платежей, службам доставки или хостинг-провайдерам — только в объёме, необходимом для предоставления их услуг.",
+
+  "privacySecurityTitle": "5. Хранение данных и безопасность",
+  "privacySecurityText": "Мы храним персональные данные только столько, сколько необходимо для выполнения целей, описанных в этой политике, или в соответствии с требованиями закона. Мы применяем разумные технические и организационные меры для защиты вашей информации, хотя ни один способ передачи через Интернет не является полностью безопасным.",
+
+  "privacyRightsTitle": "6. Ваши права",
+  "privacyRightsText": "В зависимости от вашего местоположения, вы можете иметь право:",
+  "privacyRightsPersonalData": "Доступ, исправление или удаление ваших персональных данных",
+  "privacyRightsWithdraw": "Отозвать согласие на необязательные файлы cookie в любое время, очистив данные сайта в вашем браузере",
+  "privacyRightsActivities": "Возражать против или ограничивать определённые действия по обработке данных",
+  "privacyRightsComplaint": "Подать жалобу в орган по защите данных",
+
+  "privacyContactTitle": "7. Свяжитесь с нами",
+  "privacyContactText": "Если у вас есть вопросы по этой Политике конфиденциальности или по тому, как мы обрабатываем ваши данные, пожалуйста, свяжитесь с нами по адресу",
+  "privacyCopyright": "2026 E-commerce. Все права защищены.",
+
+  "cookieBannerTitle": "Мы используем файлы cookie",
+  "cookieBannerTextPart1": "Мы используем файлы cookie для улучшения вашего опыта просмотра, запоминания ваших настроек и понимания того, как вы используете наш магазин. Вы можете принять все файлы cookie или отклонить необязательные. См. нашу",
+  "cookieBannerLink": "информацию о конфиденциальности",
+  "cookieBannerTextPart2": "для подробностей.",
+  "cookieBannerLink": "информацию о конфиденциальности",
+  "decline": "Отклонить",
+  "acceptAll": "Принять все",
+  "backToStore": "Назад в Магазин"
 };
 
 
